@@ -1,0 +1,14 @@
+#!/bin/zsh
+# Run Local panelini arka planda başlatır (zaten açıksa dokunmaz) ve uygulama penceresinde açar.
+DIR="${0:A:h:h}"
+PORT=4888
+URL="http://localhost:$PORT"
+if ! lsof -nP -iTCP:$PORT -sTCP:LISTEN >/dev/null 2>&1; then
+  nohup /usr/bin/perl -MPOSIX -e "POSIX::setsid(); exec @ARGV" node "$DIR/server.mjs" >/tmp/run-local.log 2>&1 &
+  for i in {1..20}; do lsof -nP -iTCP:$PORT -sTCP:LISTEN >/dev/null 2>&1 && break; sleep 0.1; done
+fi
+if [ -d "/Applications/Google Chrome.app" ]; then
+  open -na "Google Chrome" --args --app="$URL" --window-size=1180,860
+else
+  open "$URL"
+fi

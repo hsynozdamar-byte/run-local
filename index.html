@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Run Local</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23111'/%3E%3Cpath d='M12 9.5v13l11-6.5z' fill='%2334d399'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f4f4f2;--card:#fff;--line:#e4e4e0;--fg:#141516;--mut:#71757c;--soft:#ececea;
+  --acc:#10b981;--acc-ink:#047857;--warn:#d97706;--bad:#dc2626;--shadow:0 1px 2px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.06);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){
+  --bg:#0d0e10;--card:#17181b;--line:#25272b;--fg:#ecedef;--mut:#8b9098;--soft:#1e2023;
+  --acc:#34d399;--acc-ink:#6ee7b7;--warn:#fbbf24;--bad:#f87171;--shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.35);
+}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+main{max-width:1080px;margin:0 auto;padding:28px 16px 80px}
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:22px}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:30px;height:30px;border-radius:8px;background:#111;display:grid;place-items:center}
+h1{font-size:19px;font-weight:680;margin:0;letter-spacing:-.01em}
+.sp{flex:1}
+.search{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:0 10px;height:36px;min-width:220px}
+.search input{border:0;outline:0;background:transparent;color:var(--fg);font:inherit;width:100%}
+.btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--fg);font:inherit;font-size:13px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--mut)}
+.btn.pri{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.btn.danger:hover{color:var(--bad);border-color:var(--bad)}
+.btn.sm{height:28px;padding:0 10px;font-size:12px}
+h2{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin:28px 0 12px}
+
+/* çalışanlar */
+.running{display:grid;gap:8px}
+.rrow{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;box-shadow:var(--shadow)}
+.rrow .ico{width:40px;height:40px;border-radius:10px;flex:none}
+.rrow .meta{min-width:0;flex:1}
+.rrow .t{font-weight:620;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rrow a.u{font:12.5px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--acc-ink);text-decoration:none}
+.rrow a.u:hover{text-decoration:underline}
+.rrow .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.state{font-size:12px;color:var(--mut)}
+
+/* ızgara */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:22px 14px}
+.app{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 6px 10px;border-radius:16px;cursor:pointer;user-select:none;text-align:center;border:0;background:none;color:inherit;font:inherit}
+.app:hover{background:var(--soft)}
+.app:active .ico{transform:scale(.95)}
+.ico{position:relative;width:76px;height:76px;border-radius:19px;background:var(--card);box-shadow:var(--shadow);display:grid;place-items:center;overflow:hidden;transition:transform .15s}
+.ico img{width:64%;height:64%;object-fit:contain}
+.ico.full img{width:100%;height:100%;object-fit:cover}
+.ico .mono{font-weight:700;font-size:28px;color:#fff;letter-spacing:-.02em}
+.name{font-size:13px;font-weight:560;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:110px}
+.sub{font-size:11px;color:var(--mut);margin-top:-5px;max-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{position:absolute;top:8px;right:calc(50% - 46px);width:16px;height:16px;border-radius:50%;border:3px solid var(--bg);background:var(--acc);display:none}
+.app:hover .badge{border-color:var(--soft)}
+.app[data-st=running] .badge{display:block}
+.app[data-st=error] .badge{display:block;background:var(--bad)}
+.app[data-st=starting] .ico::after,.app[data-st=installing] .ico::after,.rrow[data-st=starting] .ico::after,.rrow[data-st=installing] .ico::after{
+  content:"";position:absolute;inset:0;background:color-mix(in srgb,var(--card) 55%,transparent);
+  background-image:conic-gradient(var(--acc) 0 25%,transparent 0);-webkit-mask:radial-gradient(circle,transparent 56%,#000 57%,#000 64%,transparent 65%);mask:radial-gradient(circle,transparent 56%,#000 57%,#000 64%,transparent 65%);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(1turn)}}
+.more{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:7px;border:0;background:transparent;color:var(--mut);cursor:pointer;opacity:0;display:grid;place-items:center}
+.app:hover .more,.more:focus-visible{opacity:1}.more:hover{background:var(--line);color:var(--fg)}
+.app.hidden-app{opacity:.45}
+.empty{color:var(--mut);padding:24px;text-align:center;border:1px dashed var(--line);border-radius:14px}
+
+/* menü */
+.menu{position:fixed;z-index:20;min-width:190px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.18);padding:6px;display:none}
+.menu.on{display:block}
+.menu button{display:flex;width:100%;align-items:center;gap:8px;border:0;background:none;color:var(--fg);font:inherit;font-size:13px;padding:8px 10px;border-radius:8px;cursor:pointer;text-align:left}
+.menu button:hover{background:var(--soft)}
+.menu hr{border:0;border-top:1px solid var(--line);margin:4px 2px}
+.menu .rn{display:flex;gap:6px;padding:4px}
+.menu .rn input{flex:1;min-width:0;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg);font:inherit;font-size:13px;padding:0 8px}
+.menu .path{font:11px ui-monospace,Menlo,monospace;color:var(--mut);padding:6px 10px 4px;word-break:break-all}
+
+/* log */
+.sheet{position:fixed;inset:auto 0 0 0;z-index:30;max-height:62vh;display:none;flex-direction:column;background:var(--card);border-top:1px solid var(--line);box-shadow:0 -12px 40px rgba(0,0,0,.18)}
+.sheet.on{display:flex}
+.sheet header{margin:0;padding:12px 16px;border-bottom:1px solid var(--line)}
+.sheet pre{margin:0;padding:12px 16px;overflow:auto;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;word-break:break-all;flex:1}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);opacity:0;background:var(--fg);color:var(--bg);padding:9px 14px;border-radius:10px;font-size:13px;transition:.2s;pointer-events:none;z-index:40}
+.toast.on{opacity:1;transform:translateX(-50%)}
+@media (max-width:560px){.search{min-width:0;flex:1 1 100%;order:3}.rrow{flex-wrap:wrap}.rrow .acts{width:100%;justify-content:flex-start}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="brand"><div class="logo"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 1.8v10.4L12 7z" fill="#34d399"/></svg></div><h1>Run Local</h1></div>
+    <span class="state" id="count"></span>
+    <span class="sp"></span>
+    <label class="search"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" style="color:var(--mut)"><circle cx="7" cy="7" r="5"/><path d="m11 11 3.5 3.5"/></svg><input id="q" placeholder="Proje ara" autocomplete="off"></label>
+    <button class="btn" id="refresh" title="Klasörleri yeniden tara">Yenile</button>
+  </header>
+
+  <section id="runWrap" hidden><h2>Çalışıyor</h2><div class="running" id="running"></div></section>
+  <h2>Projeler</h2>
+  <div class="grid" id="grid"></div>
+  <p style="margin-top:34px"><button class="btn sm" id="showHidden">Gizlenenleri göster</button></p>
+</main>
+
+<div class="menu" id="menu"></div>
+<div class="sheet" id="sheet"><header style="display:flex;align-items:center;gap:10px"><strong id="logTitle"></strong><span class="state" id="logState"></span><span class="sp"></span><button class="btn sm" id="logClose">Kapat</button></header><pre id="logBody"></pre></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const post = (p) => fetch(p, { method: "POST", headers: { "x-rl": "1" } }).then((r) => r.json());
+let projects = [], st = {}, showHidden = false, logId = null;
+try { showHidden = localStorage.rlHidden === "1"; } catch {}
+
+function toast(t) { const el = $("#toast"); el.textContent = t; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), 2200); }
+function hue(s) { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) % 360; return h; }
+function icon(p, cls = "ico") {
+  const h = hue(p.name), ini = esc(p.name.split(" ").slice(0, 2).map((w) => w[0]).join(""));
+  const grad = `background:linear-gradient(150deg,hsl(${h} 70% 60%),hsl(${(h + 40) % 360} 65% 42%))`;
+  if (p.icon) return `<div class="${cls}${p.full ? " full" : ""}" data-grad="${grad}"><img src="${esc(p.icon)}" alt="" loading="lazy" onerror="iconFail(this)"><span class="mono" hidden>${ini}</span></div>`;
+  return `<div class="${cls}" style="${grad}"><span class="mono">${ini}</span></div>`;
+}
+function iconFail(img) { const box = img.parentNode; box.setAttribute("style", box.dataset.grad); box.querySelector(".mono").hidden = false; img.remove(); }
+function ago(ms) {
+  const d = (Date.now() - ms) / 864e5;
+  if (d < 1) return "bugün"; if (d < 2) return "dün"; if (d < 30) return Math.floor(d) + " gün önce";
+  if (d < 365) return Math.floor(d / 30) + " ay önce"; return Math.floor(d / 365) + " yıl önce";
+}
+const label = { running: "Çalışıyor", starting: "Başlatılıyor…", installing: "Paketler kuruluyor…", error: "Hata ile kapandı" };
+
+function render() {
+  const q = $("#q").value.trim().toLocaleLowerCase("tr");
+  const vis = projects.filter((p) => (showHidden || !p.hidden) && (!q || (p.name + " " + p.rel + " " + p.kind).toLocaleLowerCase("tr").includes(q)));
+  $("#grid").innerHTML = vis.length ? vis.map((p) => {
+    const s = st[p.id]?.status || "";
+    return `<div class="app${p.hidden ? " hidden-app" : ""}" data-id="${p.id}" data-st="${s}" role="button" tabindex="0" title="${esc(p.rel)}${p.cmd ? "\n" + esc(p.install ? p.install + " && " + p.cmd : p.cmd) : ""}">
+      <button class="more" data-more="${p.id}" aria-label="Seçenekler">⋯</button>
+      ${icon(p)}<span class="badge"></span>
+      <div class="name">${esc(p.name)}</div>
+      <div class="sub">${esc(p.group ? p.group + " · " : "")}${esc(p.kind)}${p.install ? " · kurulum" : ""}</div>
+    </div>`;
+  }).join("") : `<div class="empty" style="grid-column:1/-1">Eşleşen proje yok</div>`;
+
+  const run = projects.filter((p) => st[p.id] && st[p.id].status !== "error");
+  $("#runWrap").hidden = !run.length;
+  $("#running").innerHTML = run.map((p) => {
+    const s = st[p.id];
+    return `<div class="rrow" data-st="${s.status}">${icon(p)}
+      <div class="meta"><div class="t">${esc(p.name)}</div>
+      ${s.url ? `<a class="u" href="${esc(s.url)}" target="_blank">${esc(s.url.replace("http://", ""))}</a>` : `<span class="state">${label[s.status] || ""}</span>`}</div>
+      <div class="acts">${s.url ? `<a class="btn sm pri" href="${esc(s.url)}" target="_blank" style="text-decoration:none">Aç</a>` : ""}
+      <button class="btn sm" data-log="${p.id}">Log</button><button class="btn sm danger" data-stop="${p.id}">Durdur</button></div></div>`;
+  }).join("");
+  const n = run.filter((p) => st[p.id].status === "running").length;
+  $("#count").textContent = projects.filter((p) => !p.hidden).length + " proje" + (n ? " · " + n + " çalışıyor" : "");
+  $("#showHidden").textContent = showHidden ? "Gizlenenleri sakla" : "Gizlenenleri göster (" + projects.filter((p) => p.hidden).length + ")";
+}
+
+async function loadProjects(refresh) { projects = await (await fetch("/api/projects" + (refresh ? "?refresh" : ""))).json(); render(); }
+async function loadStatus() { st = await (await fetch("/api/status")).json(); render(); if (logId) loadLog(); }
+
+async function runApp(id) {
+  const p = projects.find((x) => x.id === id);
+  if (st[id]?.status === "starting" || st[id]?.status === "installing") return openLog(id);
+  const r = await post("/api/run?id=" + id);
+  if (r.opened) toast(p.name + " açıldı");
+  else toast(p.kind === "Xcode" ? "Xcode'da açılıyor" : p.name + (p.install ? " kuruluyor, sonra açılacak" : " başlatılıyor"));
+  setTimeout(loadStatus, 400);
+}
+
+// menü
+const menu = $("#menu");
+function openMenu(id, x, y) {
+  const p = projects.find((x) => x.id === id), s = st[id];
+  menu.innerHTML = `<div class="path">${esc(p.rel)}</div>
+    <button data-a="run">${s?.status === "running" ? "Tarayıcıda aç" : p.kind === "Xcode" ? "Xcode'da aç" : "Çalıştır"}</button>
+    ${s ? `<button data-a="stop">Durdur</button>` : ""}
+    <button data-a="log">Log</button><hr>
+    <button data-a="reveal">Klasörü göster</button>
+    <button data-a="code">Editörde aç</button>
+    <button data-a="rescan">Yenile (ikon, ad, komut)</button><hr>
+    <div class="rn"><input id="rn" value="${esc(p.name)}" aria-label="Ad"><button class="btn sm" data-a="rename" style="width:auto">Kaydet</button></div>
+    <button data-a="hide">${p.hidden ? "Göster" : "Gizle"}</button>`;
+  menu.dataset.id = id; menu.classList.add("on");
+  const r = menu.getBoundingClientRect();
+  menu.style.left = Math.max(8, Math.min(x, innerWidth - r.width - 8)) + "px";
+  menu.style.top = Math.max(8, Math.min(y, innerHeight - r.height - 8)) + "px";
+}
+const closeMenu = () => menu.classList.remove("on");
+menu.addEventListener("click", async (e) => {
+  const a = e.target.dataset.a, id = menu.dataset.id, p = projects.find((x) => x.id === id);
+  if (!a) return;
+  closeMenu();
+  if (a === "run") runApp(id);
+  if (a === "stop") { await post("/api/stop?id=" + id); toast(p.name + " durduruldu"); setTimeout(loadStatus, 800); }
+  if (a === "log") openLog(id);
+  if (a === "reveal") post("/api/reveal?id=" + id);
+  if (a === "code") post("/api/code?id=" + id);
+  if (a === "rescan") { const r = await post("/api/rescan?id=" + id); await loadProjects(); toast(r.removed ? p.name + " artık proje değil, listeden çıktı" : p.name + " yenilendi"); }
+  if (a === "hide") { await post("/api/hide?id=" + id + "&on=" + (p.hidden ? "0" : "1")); loadProjects(); }
+  if (a === "rename") { await post("/api/rename?id=" + id + "&name=" + encodeURIComponent($("#rn")?.value || "")); loadProjects(true); }
+});
+menu.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.id === "rn") menu.querySelector("[data-a=rename]").click(); });
+
+// log
+async function loadLog() {
+  const d = await (await fetch("/api/log?id=" + logId)).json();
+  const pre = $("#logBody"), atEnd = pre.scrollTop + pre.clientHeight >= pre.scrollHeight - 30;
+  pre.textContent = d.log.length ? d.log.join("\n") : "Bu panelden başlatılmadığı için log yok.";
+  $("#logState").textContent = label[st[logId]?.status] || (d.status === "stopped" ? "Kapandı" : "");
+  if (atEnd) pre.scrollTop = pre.scrollHeight;
+}
+function openLog(id) { logId = id; $("#logTitle").textContent = projects.find((p) => p.id === id).name; $("#sheet").classList.add("on"); loadLog(); }
+$("#logClose").onclick = () => { logId = null; $("#sheet").classList.remove("on"); };
+
+document.addEventListener("click", async (e) => {
+  const more = e.target.closest("[data-more]");
+  if (more) { e.stopPropagation(); const r = more.getBoundingClientRect(); return openMenu(more.dataset.more, r.right - 10, r.bottom + 4); }
+  if (!e.target.closest("#menu")) closeMenu();
+  const t = e.target.closest("[data-stop],[data-log]");
+  if (t?.dataset.stop) { t.textContent = "…"; await post("/api/stop?id=" + t.dataset.stop); setTimeout(loadStatus, 800); return; }
+  if (t?.dataset.log) return openLog(t.dataset.log);
+  const app = e.target.closest(".app");
+  if (app) runApp(app.dataset.id);
+});
+document.addEventListener("contextmenu", (e) => { const app = e.target.closest(".app"); if (app) { e.preventDefault(); openMenu(app.dataset.id, e.clientX, e.clientY); } });
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") { closeMenu(); $("#logClose").click(); }
+  if (e.key === "Enter" && e.target.classList?.contains("app")) runApp(e.target.dataset.id);
+  if (e.key === "/" && document.activeElement !== $("#q")) { e.preventDefault(); $("#q").focus(); }
+});
+$("#q").oninput = render;
+$("#refresh").onclick = async () => { $("#refresh").textContent = "Taranıyor…"; await loadProjects(true); $("#refresh").textContent = "Yenile"; toast(projects.length + " proje bulundu"); };
+$("#showHidden").onclick = () => { showHidden = !showHidden; try { localStorage.rlHidden = showHidden ? "1" : "0"; } catch {} render(); };
+
+loadProjects().then(loadStatus);
+setInterval(() => document.hidden || loadStatus(), 2500);
+</script>
+</body>
+</html>
