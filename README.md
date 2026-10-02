@@ -43,3 +43,7 @@ Klasörleri panelden **Klasörler** düğmesiyle ekleyip çıkarabilirsin; `root
 
 
 Panel yalnızca `127.0.0.1:4888` üzerinde dinler; ağdan erişilemez. / The panel only listens on localhost.
+
+## Yapan / Made by
+
+Hüseyin · [giot.wtf](https://giot.wtf) · [nowon.wtf](https://nowon.wtf)
