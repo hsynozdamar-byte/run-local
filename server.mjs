@@ -14,7 +14,8 @@ const HOME = homedir();
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const STATE_FILE = path.join(HERE, "state.json");
 const SKIP = new Set(["node_modules", "public", "src", "app", "assets", "dist", "build", "out", "docs", "design",
-  "scripts", "vendor", "lib", "components", "localhost-manager", "run-local"]);
+  "scripts", "vendor", "lib", "components", "localhost-manager", "run-local",
+  "Library", "Applications", "Pictures", "Music", "Movies", "Public"]);
 
 // state.json: { roots: [...], extra: [...], hidden: [...], names: {rel: "Ad"} }
 function loadState() {
@@ -128,6 +129,8 @@ function children(dir) {
   } catch { return []; }
 }
 
+const tilde = (d) => d.replace(HOME, "~");
+function folders() { return { roots: state.roots.map(tilde), extra: state.extra.map(tilde) }; }
 const pretty = (s) => s.replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 async function describe(p) {
   const rel = p.dir.replace(HOME + "/", "~/");
@@ -276,6 +279,32 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === "/api/log") {
       const rec = procs.get(id);
       return send(res, 200, { log: rec?.log || [], status: rec?.status || null });
+    }
+    if (url.pathname === "/api/folders") return send(res, 200, folders());
+    if (mut && url.pathname === "/api/folders/add") {
+      let dir = url.searchParams.get("path") || "";
+      if (url.searchParams.has("pick")) {
+        try {
+          dir = (await run("osascript", ["-e", "activate", "-e", 'POSIX path of (choose folder with prompt "Run Local: projelerinin olduğu klasörü seç")'], { timeout: 300000 })).stdout.trim();
+        } catch { return send(res, 200, { cancelled: true }); }
+      }
+      dir = path.resolve(dir.trim().replace(/^~(?=\/|$)/, HOME)).replace(/\/+$/, "");
+      try { if (!fs.statSync(dir).isDirectory()) throw 0; } catch { return send(res, 400, { error: "Klasör bulunamadı" }); }
+      // Klasörün kendisi bir projeyse tek proje olarak, değilse taranacak klasör olarak eklenir.
+      const as = detect(dir) ? "project" : "root";
+      const key = as === "project" ? "extra" : "roots";
+      if (!state[key].includes(dir)) state[key].push(dir);
+      saveState(state);
+      const list = await scan(true);
+      const count = list.filter((p) => p.dir === dir || p.dir.startsWith(dir + "/")).length;
+      return send(res, 200, { as, dir, count, ...folders() });
+    }
+    if (mut && url.pathname === "/api/folders/remove") {
+      const dir = url.searchParams.get("path").replace(/^~(?=\/|$)/, HOME);
+      state.roots = state.roots.filter((d) => d !== dir);
+      state.extra = state.extra.filter((d) => d !== dir);
+      saveState(state); await scan(true);
+      return send(res, 200, folders());
     }
     if (!mut) return send(res, 200, fs.readFileSync(path.join(HERE, "index.html"), "utf8"), "text/html; charset=utf-8");
 

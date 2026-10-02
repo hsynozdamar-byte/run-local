@@ -38,8 +38,8 @@ Masaüstüne **Run Local** gelir; çift tıkla. / A **Run Local** app appears on
 }
 ```
 
-`roots` taranan klasörler, `extra` tek tek eklenen projeler. Değişiklikten sonra paneli kapatıp aç: `lsof -tiTCP:4888 | xargs kill`.
+Klasörleri panelden **Klasörler** düğmesiyle ekleyip çıkarabilirsin; `roots` taranan klasörler, `extra` tek tek eklenen projeler. / Add or remove folders from the **Klasörler** button in the panel.
 
-`roots` are scanned folders, `extra` single projects. Restart the panel after editing.
+
 
 Panel yalnızca `127.0.0.1:4888` üzerinde dinler; ağdan erişilemez. / The panel only listens on localhost.

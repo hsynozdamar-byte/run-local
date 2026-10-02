@@ -83,6 +83,20 @@ h2{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;
 .sheet pre{margin:0;padding:12px 16px;overflow:auto;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;word-break:break-all;flex:1}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);opacity:0;background:var(--fg);color:var(--bg);padding:9px 14px;border-radius:10px;font-size:13px;transition:.2s;pointer-events:none;z-index:40}
 .toast.on{opacity:1;transform:translateX(-50%)}
+
+/* klasörler */
+.modal{position:fixed;inset:0;z-index:35;display:none;place-items:center;background:rgba(0,0,0,.28);padding:16px}
+.modal.on{display:grid}
+.dlg{width:min(560px,100%);max-height:80vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.25);padding:20px}
+.dlg h3{margin:0 0 4px;font-size:16px}
+.dlg p.hint{margin:0 0 16px;color:var(--mut);font-size:13px}
+.frow{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px}
+.frow code{flex:1;min-width:0;font:12.5px ui-monospace,SFMono-Regular,Menlo,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.frow .k{font-size:11px;color:var(--mut);border:1px solid var(--line);border-radius:6px;padding:1px 6px}
+.frow button{border:0;background:none;color:var(--mut);cursor:pointer;font-size:16px;line-height:1;padding:2px 4px;border-radius:6px}
+.frow button:hover{color:var(--bad);background:var(--soft)}
+.addrow{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.addrow input{flex:1;min-width:180px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--fg);font:12.5px ui-monospace,Menlo,monospace;padding:0 10px}
 @media (max-width:560px){.search{min-width:0;flex:1 1 100%;order:3}.rrow{flex-wrap:wrap}.rrow .acts{width:100%;justify-content:flex-start}}
 </style>
 </head>
@@ -93,6 +107,7 @@ h2{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;
     <span class="state" id="count"></span>
     <span class="sp"></span>
     <label class="search"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" style="color:var(--mut)"><circle cx="7" cy="7" r="5"/><path d="m11 11 3.5 3.5"/></svg><input id="q" placeholder="Proje ara" autocomplete="off"></label>
+    <button class="btn" id="folders" title="Taranan klasörler">Klasörler</button>
     <button class="btn" id="refresh" title="Klasörleri yeniden tara">Yenile</button>
   </header>
 
@@ -104,6 +119,13 @@ h2{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;
 
 <div class="menu" id="menu"></div>
 <div class="sheet" id="sheet"><header style="display:flex;align-items:center;gap:10px"><strong id="logTitle"></strong><span class="state" id="logState"></span><span class="sp"></span><button class="btn sm" id="logClose">Kapat</button></header><pre id="logBody"></pre></div>
+<div class="modal" id="fmodal"><div class="dlg" role="dialog" aria-labelledby="fh">
+  <h3 id="fh">Klasörler</h3>
+  <p class="hint">Run Local bu klasörlerin içine iki seviye bakar. Bir projenin kendi klasörünü seçersen tek proje olarak eklenir.</p>
+  <div id="flist"></div>
+  <div class="addrow"><button class="btn pri" id="fpick">Klasör seç…</button><input id="fpath" placeholder="veya yol yapıştır: ~/Documents/işler" autocomplete="off"><button class="btn" id="fadd">Ekle</button></div>
+  <div style="display:flex;justify-content:flex-end;margin-top:16px"><button class="btn" id="fclose">Bitti</button></div>
+</div></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -140,7 +162,8 @@ function render() {
       <div class="name">${esc(p.name)}</div>
       <div class="sub">${esc(p.group ? p.group + " · " : "")}${esc(p.kind)}${p.install ? " · kurulum" : ""}</div>
     </div>`;
-  }).join("") : `<div class="empty" style="grid-column:1/-1">Eşleşen proje yok</div>`;
+  }).join("") : (projects.length ? `<div class="empty" style="grid-column:1/-1">Eşleşen proje yok</div>`
+    : `<div class="empty" style="grid-column:1/-1">Henüz proje bulunamadı. Projelerinin olduğu klasörü ekle.<br><br><button class="btn pri" data-openfolders>Klasör ekle</button></div>`);
 
   const run = projects.filter((p) => st[p.id] && st[p.id].status !== "error");
   $("#runWrap").hidden = !run.length;
@@ -226,7 +249,7 @@ document.addEventListener("click", async (e) => {
 });
 document.addEventListener("contextmenu", (e) => { const app = e.target.closest(".app"); if (app) { e.preventDefault(); openMenu(app.dataset.id, e.clientX, e.clientY); } });
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") { closeMenu(); $("#logClose").click(); }
+  if (e.key === "Escape") { closeMenu(); $("#logClose").click(); $("#fclose").click(); }
   if (e.key === "Enter" && e.target.classList?.contains("app")) runApp(e.target.dataset.id);
   if (e.key === "/" && document.activeElement !== $("#q")) { e.preventDefault(); $("#q").focus(); }
 });
@@ -234,7 +257,35 @@ $("#q").oninput = render;
 $("#refresh").onclick = async () => { $("#refresh").textContent = "Taranıyor…"; await loadProjects(true); $("#refresh").textContent = "Yenile"; toast(projects.length + " proje bulundu"); };
 $("#showHidden").onclick = () => { showHidden = !showHidden; try { localStorage.rlHidden = showHidden ? "1" : "0"; } catch {} render(); };
 
+
+// klasörler
+async function loadFolders(d) {
+  d = d || await (await fetch("/api/folders")).json();
+  const row = (p, k) => `<div class="frow"><code title="${esc(p)}">${esc(p)}</code><span class="k">${k}</span><button data-frm="${esc(p)}" aria-label="Kaldır">×</button></div>`;
+  $("#flist").innerHTML = d.roots.map((p) => row(p, "Klasör")).join("") + d.extra.map((p) => row(p, "Proje")).join("")
+    || `<div class="empty">Hiç klasör yok</div>`;
+}
+function openFolders() { $("#fmodal").classList.add("on"); loadFolders(); }
+async function addFolder(q) {
+  const r = await fetch("/api/folders/add?" + q, { method: "POST", headers: { "x-rl": "1" } }).then((r) => r.json());
+  if (r.cancelled) return;
+  if (r.error) return toast(r.error);
+  loadFolders(r); $("#fpath").value = ""; await loadProjects(); loadStatus();
+  toast(r.as === "project" ? "Proje eklendi" : r.count + " proje bulundu");
+}
+$("#folders").onclick = openFolders;
+$("#fclose").onclick = () => $("#fmodal").classList.remove("on");
+$("#fmodal").onclick = (e) => { if (e.target.id === "fmodal") $("#fclose").click(); };
+$("#fpick").onclick = async () => { $("#fpick").textContent = "Pencere açıldı…"; await addFolder("pick=1"); $("#fpick").textContent = "Klasör seç…"; };
+$("#fadd").onclick = () => $("#fpath").value.trim() && addFolder("path=" + encodeURIComponent($("#fpath").value.trim()));
+$("#fpath").onkeydown = (e) => { if (e.key === "Enter") $("#fadd").click(); };
+document.addEventListener("click", async (e) => {
+  if (e.target.closest("[data-openfolders]")) return openFolders();
+  const rm = e.target.closest("[data-frm]");
+  if (rm) { loadFolders(await post("/api/folders/remove?path=" + encodeURIComponent(rm.dataset.frm))); await loadProjects(); }
+});
 loadProjects().then(loadStatus);
+if (location.hash === "#klasorler") openFolders();
 setInterval(() => document.hidden || loadStatus(), 2500);
 </script>
 </body>
