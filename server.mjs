@@ -73,7 +73,10 @@ function findIcon(dir, items) {
       if (!href) continue;
       if (href.startsWith("data:")) return { data: href };
       const clean = href.split("?")[0].replace(/^\.?\//, "");
-      for (const c of [clean, "public/" + clean]) if (exists(path.join(dir, c))) return { file: c };
+      for (const c of [clean, "public/" + clean]) {
+        const full = path.resolve(dir, c);
+        if (full.startsWith(dir + path.sep) && exists(full)) return { file: c }; // proje klasörünün dışına çıkma
+      }
     }
   }
   for (const c of ["app/favicon.ico", "src/app/favicon.ico", "public/favicon.ico"]) if (exists(path.join(dir, c))) return { file: c };
@@ -259,7 +262,17 @@ async function status() {
 const MIME = { ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".ico": "image/x-icon", ".webp": "image/webp" };
 const send = (res, code, body, type = "application/json") => { res.writeHead(code, { "content-type": type, "cache-control": "no-store" }); res.end(typeof body === "string" || Buffer.isBuffer(body) ? body : JSON.stringify(body)); };
 
+// Yalnızca bu bilgisayardan, panelin kendi adresinden gelen isteklere cevap ver.
+// Host kontrolü DNS rebinding'i, Origin kontrolü başka sitelerin istek atmasını engeller.
+const ALLOWED = new Set([`localhost:${PORT}`, `127.0.0.1:${PORT}`]);
+function trusted(req) {
+  if (!ALLOWED.has(req.headers.host)) return false;
+  const origin = req.headers.origin;
+  return !origin || ALLOWED.has(origin.replace(/^http:\/\//, ""));
+}
+
 const server = http.createServer(async (req, res) => {
+  if (!trusted(req)) { res.writeHead(403); return res.end("forbidden"); }
   const url = new URL(req.url, "http://x");
   const id = url.searchParams.get("id");
   const mut = req.method === "POST" && req.headers["x-rl"] === "1";

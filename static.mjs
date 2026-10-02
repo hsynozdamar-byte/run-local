@@ -12,10 +12,17 @@ const MIME = {
   ".mp3": "audio/mpeg", ".wav": "audio/wav", ".woff2": "font/woff2", ".woff": "font/woff", ".ttf": "font/ttf", ".txt": "text/plain",
 };
 
+const HOSTS = new Set([`localhost:${PORT}`, `127.0.0.1:${PORT}`]);
+
 http.createServer((req, res) => {
-  let p = decodeURIComponent(new URL(req.url, "http://x").pathname);
+  // Başka bir alan adı üzerinden (DNS rebinding) gelen istekleri reddet.
+  if (!HOSTS.has(req.headers.host)) { res.writeHead(403); return res.end(); }
+  let p;
+  try { p = decodeURIComponent(new URL(req.url, "http://x").pathname); } catch { res.writeHead(400); return res.end(); }
   let file = path.join(ROOT, p);
-  if (!file.startsWith(ROOT)) { res.writeHead(403); return res.end(); }
+  if (file !== ROOT && !file.startsWith(ROOT + path.sep)) { res.writeHead(403); return res.end(); }
+  // .env, .git gibi gizli dosyaları sunma
+  if (path.relative(ROOT, file).split(path.sep).some((s) => s.startsWith("."))) { res.writeHead(404); return res.end("404"); }
   try {
     if (fs.statSync(file).isDirectory()) file = path.join(file, "index.html");
   } catch {
