@@ -100,7 +100,7 @@ body.dnd .app:hover{background:none}
 .empty{color:var(--mut);padding:24px;text-align:center;border:1px dashed var(--line);border-radius:14px}
 
 /* menü */
-.menu{position:fixed;z-index:20;min-width:190px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.18);padding:6px;display:none}
+.menu{position:fixed;z-index:38;min-width:190px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.18);padding:6px;display:none}
 .menu.on{display:block}
 .menu button{display:flex;width:100%;align-items:center;gap:8px;border:0;background:none;color:var(--fg);font:inherit;font-size:13px;padding:8px 10px;border-radius:8px;cursor:pointer;text-align:left}
 .menu button:hover{background:var(--soft)}
@@ -377,7 +377,8 @@ const reduce = matchMedia("(prefers-reduced-motion: reduce)");
 function folderItems(g) { const m = new Map(projects.map((p) => [p.rel, p])); return g.items.map((r) => m.get(r)).filter((p) => p && shown(p)); }
 function renderFolder() {
   const g = openId && groups.find((x) => x.id === openId);
-  if (!g) return;
+  // Klasör boşalıp kalktıysa (ör. menüden son proje çıkarıldı) kapat.
+  if (!g) { if (openId) closeFolder(); return; }
   fpanel.innerHTML = `<div class="grid" data-drop="${g.id}">${folderItems(g).map(tile).join("")}</div>`;
   if (document.activeElement !== ftitle) ftitle.value = g.name;
 }
