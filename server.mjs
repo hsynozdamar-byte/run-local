@@ -13,17 +13,21 @@ const PORT = Number(process.env.PORT) || 4888;
 const HOME = homedir();
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const STATE_FILE = path.join(HERE, "state.json");
+const RESUME_FILE = path.join(HERE, ".resume.json");
+// Panel kodu değişince arayüz "yeniden başlat" der; açılıştaki dosya zamanlarıyla karşılaştırılır.
+const codeStamp = () => ["server.mjs", "static.mjs"].map((f) => { try { return fs.statSync(path.join(HERE, f)).mtimeMs; } catch { return 0; } }).join();
+const BOOT_STAMP = codeStamp();
 const SKIP = new Set(["node_modules", "public", "src", "app", "assets", "dist", "build", "out", "docs", "design",
   "scripts", "vendor", "lib", "components", "localhost-manager", "run-local",
   "Library", "Applications", "Pictures", "Music", "Movies", "Public"]);
 
-// state.json: { roots: [...], extra: [...], hidden: [...], names: {rel: "Ad"} }
+// state.json: { roots: [...], extra: [...], hidden: [...], names: {rel: "Ad"}, groups: [{id, name, collapsed, items: [rel]}] }
 function loadState() {
   // Varsayılan: yaygın proje klasörlerinden hangileri varsa.
   const roots = ["Developer", "Projects", "projects", "code", "Code", "dev", "src", "Sites", "Documents/GitHub"]
     .map((d) => path.join(HOME, d)).filter((d) => fs.existsSync(d)).map((d) => fs.realpathSync.native(d))
     .filter((d, i, a) => a.indexOf(d) === i); // macOS büyük/küçük harf duyarsız: Projects = projects
-  const def = { roots: roots.length ? roots : [path.join(HOME, "Developer")], extra: [], hidden: [], names: {} };
+  const def = { roots: roots.length ? roots : [path.join(HOME, "Developer")], extra: [], hidden: [], names: {}, groups: [] };
   try { return { ...def, ...JSON.parse(fs.readFileSync(STATE_FILE, "utf8")) }; } catch { return def; }
 }
 function saveState(s) { fs.writeFileSync(STATE_FILE, JSON.stringify(s, null, 2)); }
@@ -177,7 +181,7 @@ function openURL(url) {
   if (!process.env.RL_NO_OPEN) execFile("open", [url]);
 }
 
-async function start(p) {
+async function start(p, quiet) {
   const cur = procs.get(p.id);
   if (cur && cur.status !== "stopped") return cur;
   if (p.kind === "Xcode") { execFile("open", [path.join(p.dir, p.cmd)]); return null; }
@@ -189,7 +193,7 @@ async function start(p) {
     cwd: p.dir, detached: true,
     env: { ...process.env, PORT: String(port), BROWSER: "none", FORCE_COLOR: "0", NO_COLOR: "1" },
   });
-  const rec = { child, pid: child.pid, url: null, log: [], status: p.install ? "installing" : "starting", startedAt: Date.now(), opened: false };
+  const rec = { child, pid: child.pid, url: null, log: [], status: p.install ? "installing" : "starting", startedAt: Date.now(), opened: !!quiet };
   procs.set(p.id, rec);
   const onData = (buf) => {
     for (const raw of buf.toString().split(/\r?\n/)) {
@@ -209,7 +213,7 @@ async function start(p) {
   child.stderr.on("data", onData);
   child.on("exit", (code) => {
     rec.status = "stopped"; rec.code = code;
-    rec.log.push(`— süreç kapandı (kod ${code ?? "sinyal"}) —`);
+    rec.log.push(state.lang === "en" ? `— process exited (code ${code ?? "signal"}) —` : `— süreç kapandı (kod ${code ?? "sinyal"}) —`);
   });
   return rec;
 }
@@ -298,7 +302,7 @@ const server = http.createServer(async (req, res) => {
       let dir = url.searchParams.get("path") || "";
       if (url.searchParams.has("pick")) {
         try {
-          dir = (await run("osascript", ["-e", "activate", "-e", 'POSIX path of (choose folder with prompt "Run Local: projelerinin olduğu klasörü seç")'], { timeout: 300000 })).stdout.trim();
+          dir = (await run("osascript", ["-e", "activate", "-e", `POSIX path of (choose folder with prompt "${state.lang === "en" ? "Run Local: choose the folder with your projects" : "Run Local: projelerinin olduğu klasörü seç"}")`], { timeout: 300000 })).stdout.trim();
         } catch { return send(res, 200, { cancelled: true }); }
       }
       dir = path.resolve(dir.trim().replace(/^~(?=\/|$)/, HOME)).replace(/\/+$/, "");
@@ -318,6 +322,46 @@ const server = http.createServer(async (req, res) => {
       state.extra = state.extra.filter((d) => d !== dir);
       saveState(state); await scan(true);
       return send(res, 200, folders());
+    }
+    if (url.pathname === "/api/settings" && !mut) return send(res, 200, { lang: state.lang || null, order: state.order || [] });
+    if (mut && url.pathname === "/api/order") {
+      let body = ""; for await (const c of req) { body += c; if (body.length > 1e6) throw new Error("too big"); }
+      const o = JSON.parse(body || "[]");
+      // Izgaradaki kutucukların sırası: proje yolu ya da "f:<grup id>".
+      state.order = (Array.isArray(o) ? o : []).map(String).filter((k, i, a) => a.indexOf(k) === i).slice(0, 5000);
+      saveState(state); return send(res, 200, { ok: true });
+    }
+    if (mut && url.pathname === "/api/settings") {
+      let body = ""; for await (const c of req) { body += c; if (body.length > 1e4) throw new Error("too big"); }
+      const b = JSON.parse(body || "{}");
+      if (["tr", "en"].includes(b.lang)) state.lang = b.lang;
+      saveState(state); return send(res, 200, { lang: state.lang || null });
+    }
+    if (url.pathname === "/api/meta") return send(res, 200, { stale: codeStamp() !== BOOT_STAMP });
+    if (mut && url.pathname === "/api/restart") {
+      // Bu panelin açtığı sunucuları not et; yeni panel açılınca tarayıcı açmadan geri başlatır.
+      const ids = [...procs].filter(([, r]) => r.status !== "stopped").map(([k]) => k);
+      fs.writeFileSync(RESUME_FILE, JSON.stringify(ids));
+      send(res, 200, { ok: true });
+      spawn("/bin/sh", ["-c", `sleep 1; exec node ${JSON.stringify(path.join(HERE, "server.mjs"))} >>/tmp/run-local.log 2>&1`], { detached: true, stdio: "ignore", env: process.env }).unref();
+      setTimeout(() => process.kill(process.pid, "SIGTERM"), 100);
+      return;
+    }
+    if (url.pathname === "/api/groups" && !mut) return send(res, 200, state.groups);
+    if (mut && url.pathname === "/api/groups") {
+      let body = "";
+      for await (const c of req) { body += c; if (body.length > 1e6) throw new Error("çok büyük"); }
+      const seen = new Set();
+      state.groups = (JSON.parse(body) || []).filter((g) => g && typeof g === "object").slice(0, 100).map((g) => ({
+        id: String(g.id || Math.random().toString(36).slice(2, 10)).slice(0, 24),
+        name: String(g.name || "").trim().slice(0, 40) || "Grup",
+        collapsed: !!g.collapsed,
+        // Klasörün ızgaradaki sırası; yoksa en başta durur.
+        ...(Number.isFinite(g.at) ? { at: Math.max(0, Math.min(9999, Math.floor(g.at))) } : {}),
+        // Bir proje yalnız bir grupta durur.
+        items: (Array.isArray(g.items) ? g.items : []).map(String).filter((r) => !seen.has(r) && seen.add(r)),
+      }));
+      saveState(state); return send(res, 200, state.groups);
     }
     if (!mut) return send(res, 200, fs.readFileSync(path.join(HERE, "index.html"), "utf8"), "text/html; charset=utf-8");
 
@@ -363,7 +407,12 @@ const server = http.createServer(async (req, res) => {
     send(res, 404, { error: "yok" });
   } catch (e) { send(res, 500, { error: e.message }); }
 });
-server.listen(PORT, "127.0.0.1", () => console.log(`Run Local → http://localhost:${PORT}`));
+server.listen(PORT, "127.0.0.1", async () => {
+  console.log(`Run Local → http://localhost:${PORT}`);
+  const ids = readJSON(RESUME_FILE); if (!ids) return;
+  fs.rmSync(RESUME_FILE, { force: true });
+  for (const id of ids) { const p = await byId(id); if (p) await start(p, true); }
+});
 
 // Panel kapanınca başlattığı sunucular da kapansın.
 for (const sig of ["SIGTERM", "SIGINT"]) process.on(sig, () => { for (const r of procs.values()) if (r.status !== "stopped") killTree(r.pid, "SIGTERM"); process.exit(0); });

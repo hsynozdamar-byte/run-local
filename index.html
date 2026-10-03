@@ -64,6 +64,39 @@ h2{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;
 .more{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:7px;border:0;background:transparent;color:var(--mut);cursor:pointer;opacity:0;display:grid;place-items:center}
 .app:hover .more,.more:focus-visible{opacity:1}.more:hover{background:var(--line);color:var(--fg)}
 .app.hidden-app{opacity:.45}
+.vid{position:absolute;top:64px;right:calc(50% - 46px);width:24px;height:24px;border-radius:50%;background:#111;color:#fff;display:grid;place-items:center;border:2.5px solid var(--bg);pointer-events:none}
+.app:hover .vid{border-color:var(--soft)}
+.vid svg{margin-left:1.5px}
+/* klasörler (gruplar) */
+.ico.folder{background:color-mix(in srgb,var(--fg) 8%,var(--card));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--fg) 6%,transparent),var(--shadow);display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:min-content;align-content:start;gap:5px;padding:10px;place-items:stretch}
+.ico.folder .ico.mini{width:auto;height:auto;aspect-ratio:1;border-radius:4.5px;box-shadow:none}
+.ico.mini img{width:100%;height:100%}.ico.mini:not(.full) img{width:72%;height:72%}
+.ico.mini .mono{font-size:7px}
+.app.fold .ico{transition:transform .2s cubic-bezier(.3,1.4,.5,1)}
+.app.merge .ico{transform:scale(1.14)}
+.app.merge .ico:not(.folder){box-shadow:0 0 0 7px color-mix(in srgb,var(--fg) 10%,transparent),var(--shadow)}
+.app.dragging{opacity:.3}
+.app.drop-before::before,.app.drop-after::after{content:"";position:absolute;left:-9px;top:14px;height:72px;width:3px;border-radius:2px;background:var(--acc)}
+.app.drop-after::after{left:auto;right:-9px}
+body.dnd .app:hover{background:none}
+.fov{position:fixed;inset:0;z-index:28;display:none}
+.fov.on{display:block}
+.fbg{position:absolute;inset:0;background:color-mix(in srgb,var(--bg) 55%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.2);backdrop-filter:blur(18px) saturate(1.2);opacity:0;transition:opacity .28s}
+.fov.open .fbg{opacity:1}
+.fwrap{position:absolute;left:50%;top:50%;width:min(620px,calc(100vw - 32px));transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:14px}
+.ftitle{font:inherit;font-size:24px;font-weight:700;letter-spacing:-.02em;text-align:center;color:var(--fg);background:transparent;border:1px solid transparent;border-radius:10px;padding:2px 10px;width:100%;max-width:420px;opacity:0;transition:opacity .2s}
+.ftitle:hover{border-color:var(--line)}.ftitle:focus{outline:0;border-color:var(--acc);background:var(--card)}
+.fov.open .ftitle{opacity:1}
+.fpanel{width:100%;max-height:min(66vh,560px);overflow:auto;background:color-mix(in srgb,var(--card) 82%,transparent);border:1px solid var(--line);border-radius:30px;box-shadow:0 30px 80px rgba(0,0,0,.22);padding:22px 18px;transform-origin:0 0;will-change:transform}
+.fpanel .grid{transition:opacity .18s .08s;opacity:0}
+.fov.open .fpanel .grid{opacity:1}
+.fhint{font-size:12px;color:var(--mut);opacity:0;transition:opacity .2s}
+.fov.open .fhint{opacity:1}
+.fov.out .fpanel{outline:2px dashed var(--acc);outline-offset:4px}
+.upd{display:none;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 10px 8px 14px;margin-bottom:16px;font-size:13px;box-shadow:var(--shadow)}
+.upd.on{display:flex}
+@media (prefers-reduced-motion:reduce){.fpanel,.fbg,.ftitle,.fpanel .grid,.app.fold .ico{transition:none!important}}
+.menu .lbl{font-size:11px;color:var(--mut);padding:6px 10px 2px}
 .empty{color:var(--mut);padding:24px;text-align:center;border:1px dashed var(--line);border-radius:14px}
 
 /* menü */
@@ -90,11 +123,23 @@ h2{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;
 .dlg{width:min(560px,100%);max-height:80vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.25);padding:20px}
 .dlg h3{margin:0 0 4px;font-size:16px}
 .dlg p.hint{margin:0 0 16px;color:var(--mut);font-size:13px}
+.dlg section{padding:16px 0;border-top:1px solid var(--line)}
+.dlg section:first-of-type{border-top:0;padding-top:8px}
+.dlg h4{margin:0 0 4px;font-size:13px;font-weight:620}
+.seg{display:inline-flex;padding:3px;gap:2px;background:var(--soft);border-radius:10px;margin-top:6px}
+.seg button{border:0;background:none;color:var(--mut);font:inherit;font-size:13px;font-weight:560;height:30px;padding:0 14px;border-radius:8px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--card);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.08),0 1px 6px rgba(0,0,0,.06)}
+.frow .ico{width:28px;height:28px;border-radius:7px;flex:none}.frow .ico .mono{font-size:11px}
+.frow .nm{flex:1;min-width:0;font-weight:560;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.frow .nm small{display:block;font:11.5px ui-monospace,Menlo,monospace;color:var(--mut);font-weight:400;overflow:hidden;text-overflow:ellipsis}
+.frow .btn.sm{font-size:12px}
+.tgl{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;cursor:pointer}
+.tgl input{width:16px;height:16px;accent-color:var(--acc);margin:0}
 .frow{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px}
 .frow code{flex:1;min-width:0;font:12.5px ui-monospace,SFMono-Regular,Menlo,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .frow .k{font-size:11px;color:var(--mut);border:1px solid var(--line);border-radius:6px;padding:1px 6px}
-.frow button{border:0;background:none;color:var(--mut);cursor:pointer;font-size:16px;line-height:1;padding:2px 4px;border-radius:6px}
-.frow button:hover{color:var(--bad);background:var(--soft)}
+.frow button:not(.btn){border:0;background:none;color:var(--mut);cursor:pointer;font-size:16px;line-height:1;padding:2px 4px;border-radius:6px}
+.frow button:not(.btn):hover{color:var(--bad);background:var(--soft)}
 .addrow{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
 .addrow input{flex:1;min-width:180px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--fg);font:12.5px ui-monospace,Menlo,monospace;padding:0 10px}
 @media (max-width:560px){.search{min-width:0;flex:1 1 100%;order:3}.rrow{flex-wrap:wrap}.rrow .acts{width:100%;justify-content:flex-start}}
@@ -106,25 +151,42 @@ h2{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;
     <div class="brand"><div class="logo"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 1.8v10.4L12 7z" fill="#34d399"/></svg></div><h1>Run Local</h1></div>
     <span class="state" id="count"></span>
     <span class="sp"></span>
-    <label class="search"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" style="color:var(--mut)"><circle cx="7" cy="7" r="5"/><path d="m11 11 3.5 3.5"/></svg><input id="q" placeholder="Proje ara" autocomplete="off"></label>
-    <button class="btn" id="folders" title="Taranan klasörler">Klasörler</button>
-    <button class="btn" id="refresh" title="Klasörleri yeniden tara">Yenile</button>
+    <label class="search"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" style="color:var(--mut)"><circle cx="7" cy="7" r="5"/><path d="m11 11 3.5 3.5"/></svg><input id="q" data-i18n-ph="search" autocomplete="off"></label>
+    <button class="btn" id="refresh" data-i18n="refresh" data-i18n-title="refreshTitle"></button>
+    <button class="btn" id="settings"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.2"/><path d="M8 1.5v1.8M8 12.7v1.8M14.5 8h-1.8M3.3 8H1.5M12.6 3.4l-1.3 1.3M4.7 11.3l-1.3 1.3M12.6 12.6l-1.3-1.3M4.7 4.7 3.4 3.4"/></svg><span data-i18n="settings"></span></button>
   </header>
 
-  <section id="runWrap" hidden><h2>Çalışıyor</h2><div class="running" id="running"></div></section>
-  <h2>Projeler</h2>
-  <div class="grid" id="grid"></div>
-  <p style="margin-top:34px"><button class="btn sm" id="showHidden">Gizlenenleri göster</button></p>
+  <div class="upd" id="upd"><span data-i18n="updMsg"></span><span class="sp"></span><button class="btn sm pri" id="restart" data-i18n="restart"></button></div>
+  <section id="runWrap" hidden><h2 data-i18n="running"></h2><div class="running" id="running"></div></section>
+  <div id="board"></div>
 </main>
 
 <div class="menu" id="menu"></div>
-<div class="sheet" id="sheet"><header style="display:flex;align-items:center;gap:10px"><strong id="logTitle"></strong><span class="state" id="logState"></span><span class="sp"></span><button class="btn sm" id="logClose">Kapat</button></header><pre id="logBody"></pre></div>
+<div class="fov" id="fov"><div class="fbg" id="fbg"></div><div class="fwrap">
+  <input class="ftitle gname" id="ftitle" data-i18n-aria="groupName" spellcheck="false">
+  <div class="fpanel" id="fpanel"></div>
+  <div class="fhint" data-i18n="folderHint"></div>
+</div></div>
+<div class="sheet" id="sheet"><header style="display:flex;align-items:center;gap:10px"><strong id="logTitle"></strong><span class="state" id="logState"></span><span class="sp"></span><button class="btn sm" id="logClose" data-i18n="close"></button></header><pre id="logBody"></pre></div>
 <div class="modal" id="fmodal"><div class="dlg" role="dialog" aria-labelledby="fh">
-  <h3 id="fh">Klasörler</h3>
-  <p class="hint">Run Local bu klasörlerin içine iki seviye bakar. Bir projenin kendi klasörünü seçersen tek proje olarak eklenir.</p>
-  <div id="flist"></div>
-  <div class="addrow"><button class="btn pri" id="fpick">Klasör seç…</button><input id="fpath" placeholder="veya yol yapıştır: ~/Documents/işler" autocomplete="off"><button class="btn" id="fadd">Ekle</button></div>
-  <div style="display:flex;justify-content:flex-end;margin-top:16px"><button class="btn" id="fclose">Bitti</button></div>
+  <h3 id="fh" data-i18n="settings"></h3>
+  <section>
+    <h4 data-i18n="language"></h4>
+    <div class="seg" role="group" data-i18n-aria="language"><button data-lang="tr">Türkçe</button><button data-lang="en">English</button></div>
+  </section>
+  <section>
+    <h4 data-i18n="folders"></h4>
+    <p class="hint" data-i18n="foldersHint"></p>
+    <div id="flist"></div>
+    <div class="addrow"><button class="btn pri" id="fpick" data-i18n="pick"></button><input id="fpath" data-i18n-ph="pathPh" autocomplete="off"><button class="btn" id="fadd" data-i18n="add"></button></div>
+  </section>
+  <section>
+    <h4 data-i18n="hiddenTitle"></h4>
+    <p class="hint" data-i18n="hiddenHint"></p>
+    <div id="hlist"></div>
+    <label class="tgl"><input type="checkbox" id="showHidden"><span data-i18n="showInGrid"></span></label>
+  </section>
+  <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn" id="fclose" data-i18n="done"></button></div>
 </div></div>
 <div class="toast" id="toast"></div>
 
@@ -132,8 +194,67 @@ h2{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const post = (p) => fetch(p, { method: "POST", headers: { "x-rl": "1" } }).then((r) => r.json());
-let projects = [], st = {}, showHidden = false, logId = null;
+let projects = [], st = {}, groups = [], order = [], showHidden = false, logId = null, dragRel = null, dragFid = null;
 try { showHidden = localStorage.rlHidden === "1"; } catch {}
+
+// dil: Türkçe ve İngilizce. Seçim state.json'da durur; yoksa tarayıcı diline bakılır.
+const L = {
+  tr: {
+    search: "Proje ara", settings: "Ayarlar", refresh: "Yenile", refreshTitle: "Klasörleri yeniden tara", scanning: "Taranıyor…",
+    updMsg: "Run Local güncellendi. Yeni özellikler için paneli yeniden başlat.", restart: "Yeniden başlat", restarting: "Başlatılıyor…", restartFail: "Panel açılmadı; Run Local'i yeniden aç",
+    running: "Çalışıyor", starting: "Başlatılıyor…", installing: "Paketler kuruluyor…", error: "Hata ile kapandı",
+    groupName: "Grup adı", folderHint: "Gruptan çıkarmak için dışarı sürükle", close: "Kapat",
+    language: "Dil", folders: "Klasörler", foldersHint: "Run Local bu klasörlerin içine iki seviye bakar. Bir projenin kendi klasörünü seçersen tek proje olarak eklenir.",
+    pick: "Klasör seç…", pickOpen: "Pencere açıldı…", pathPh: "veya yol yapıştır: ~/Documents/işler", add: "Ekle", done: "Bitti",
+    kindFolder: "Klasör", kindProject: "Proje", noFolders: "Hiç klasör yok", remove: "Kaldır", projectAdded: "Proje eklendi", folderNotFound: "Klasör bulunamadı",
+    nFound: (n) => `${n} proje bulundu`, count: (n, r) => `${n} proje` + (r ? ` · ${r} çalışıyor` : ""), nProjects: (n, r) => `${n} proje` + (r ? ` · ${r} çalışıyor` : ""),
+    open: "Aç", stop: "Durdur", log: "Log", options: "Seçenekler", groupOptions: "Grup seçenekleri", install: "kurulum", video: "Video projesi",
+    projects: "Projeler", noProjects: "Henüz proje bulunamadı. Projelerinin olduğu klasörü ekle.", addFolder: "Klasör ekle", noMatch: "Eşleşen proje yok",
+    newGroup: "Yeni grup", group: "Grup", moved: (p, g) => `${p} → ${g}`, leftGroup: (p) => `${p} gruptan çıktı`,
+    rename: "Yeniden adlandır", dissolve: "Grubu dağıt (projeler kalır)", dissolved: (g) => `${g} dağıtıldı`,
+    opened: (p) => `${p} açıldı`, xcodeOpening: "Xcode'da açılıyor", installingThen: (p) => `${p} kuruluyor, sonra açılacak`, startingP: (p) => `${p} başlatılıyor`,
+    openBrowser: "Tarayıcıda aç", openXcode: "Xcode'da aç", run: "Çalıştır", reveal: "Klasörü göster", code: "Editörde aç", rescan: "Yenile (ikon, ad, komut)",
+    name: "Ad", save: "Kaydet", show: "Göster", hide: "Gizle", moveTo: "Gruba taşı", newGroupDots: "Yeni grup…", removeFromGroup: "Gruptan çıkar",
+    stopped: (p) => `${p} durduruldu`, notProject: (p) => `${p} artık proje değil, listeden çıktı`, refreshed: (p) => `${p} yenilendi`,
+    noLog: "Bu panelden başlatılmadığı için log yok.", closed: "Kapandı",
+    hiddenTitle: "Gizlenenler", hiddenHint: "Gizlediğin projeler ızgarada görünmez. Buradan geri getirebilirsin.", noHidden: "Gizlenen proje yok", hiddenToast: (p) => `${p} gizlendi. Ayarlar'dan geri getirebilirsin`, showInGrid: "Gizlenenleri ızgarada soluk göster",
+  },
+  en: {
+    search: "Search projects", settings: "Settings", refresh: "Refresh", refreshTitle: "Rescan folders", scanning: "Scanning…",
+    updMsg: "Run Local was updated. Restart the panel to get the new features.", restart: "Restart", restarting: "Restarting…", restartFail: "The panel didn't come back; open Run Local again",
+    running: "Running", starting: "Starting…", installing: "Installing packages…", error: "Exited with an error",
+    groupName: "Group name", folderHint: "Drag outside to remove from the group", close: "Close",
+    language: "Language", folders: "Folders", foldersHint: "Run Local looks two levels deep inside these folders. Pick a project's own folder to add just that project.",
+    pick: "Choose folder…", pickOpen: "Window opened…", pathPh: "or paste a path: ~/Documents/work", add: "Add", done: "Done",
+    kindFolder: "Folder", kindProject: "Project", noFolders: "No folders yet", remove: "Remove", projectAdded: "Project added", folderNotFound: "Folder not found",
+    nFound: (n) => `${n} project${n === 1 ? "" : "s"} found`, count: (n, r) => `${n} project${n === 1 ? "" : "s"}` + (r ? ` · ${r} running` : ""), nProjects: (n, r) => `${n} project${n === 1 ? "" : "s"}` + (r ? ` · ${r} running` : ""),
+    open: "Open", stop: "Stop", log: "Log", options: "Options", groupOptions: "Group options", install: "install", video: "Video project",
+    projects: "Projects", noProjects: "No projects found yet. Add the folder where your projects live.", addFolder: "Add folder", noMatch: "No matching projects",
+    newGroup: "New group", group: "Group", moved: (p, g) => `${p} → ${g}`, leftGroup: (p) => `${p} removed from the group`,
+    rename: "Rename", dissolve: "Ungroup (projects stay)", dissolved: (g) => `${g} ungrouped`,
+    opened: (p) => `Opened ${p}`, xcodeOpening: "Opening in Xcode", installingThen: (p) => `Installing ${p}, then starting`, startingP: (p) => `Starting ${p}`,
+    openBrowser: "Open in browser", openXcode: "Open in Xcode", run: "Run", reveal: "Show in Finder", code: "Open in editor", rescan: "Refresh (icon, name, command)",
+    name: "Name", save: "Save", show: "Show", hide: "Hide", moveTo: "Move to group", newGroupDots: "New group…", removeFromGroup: "Remove from group",
+    stopped: (p) => `Stopped ${p}`, notProject: (p) => `${p} is no longer a project and was removed`, refreshed: (p) => `Refreshed ${p}`,
+    noLog: "No log: this server wasn't started from the panel.", closed: "Stopped",
+    hiddenTitle: "Hidden", hiddenHint: "Hidden projects don't show in the grid. Bring them back from here.", noHidden: "No hidden projects", hiddenToast: (p) => `${p} hidden. Bring it back from Settings`, showInGrid: "Show hidden projects faded in the grid",
+  },
+};
+let lang = (navigator.language || "").toLowerCase().startsWith("tr") ? "tr" : "en";
+const t = (k, ...a) => { const v = L[lang][k] ?? L.tr[k]; return typeof v === "function" ? v(...a) : v; };
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i18n]").forEach((el) => el.textContent = t(el.dataset.i18n));
+  document.querySelectorAll("[data-i18n-ph]").forEach((el) => el.placeholder = t(el.dataset.i18nPh));
+  document.querySelectorAll("[data-i18n-title]").forEach((el) => el.title = t(el.dataset.i18nTitle));
+  document.querySelectorAll("[data-i18n-aria]").forEach((el) => el.setAttribute("aria-label", t(el.dataset.i18nAria)));
+  document.querySelectorAll("[data-lang]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.lang === lang));
+}
+async function setLang(l) {
+  lang = l; applyLang(); render(); if ($("#fmodal").classList.contains("on")) { loadFolders(); renderHidden(); }
+  await fetch("/api/settings", { method: "POST", headers: { "x-rl": "1", "content-type": "application/json" }, body: JSON.stringify({ lang }) }).catch(() => {});
+}
+document.addEventListener("click", (e) => { const b = e.target.closest("[data-lang]"); if (b) setLang(b.dataset.lang); });
 
 function toast(t) { const el = $("#toast"); el.textContent = t; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), 2200); }
 function hue(s) { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) % 360; return h; }
@@ -144,41 +265,254 @@ function icon(p, cls = "ico") {
   return `<div class="${cls}" style="${grad}"><span class="mono">${ini}</span></div>`;
 }
 function iconFail(img) { const box = img.parentNode; box.setAttribute("style", box.dataset.grad); box.querySelector(".mono").hidden = false; img.remove(); }
-function ago(ms) {
-  const d = (Date.now() - ms) / 864e5;
-  if (d < 1) return "bugün"; if (d < 2) return "dün"; if (d < 30) return Math.floor(d) + " gün önce";
-  if (d < 365) return Math.floor(d / 30) + " ay önce"; return Math.floor(d / 365) + " yıl önce";
-}
-const label = { running: "Çalışıyor", starting: "Başlatılıyor…", installing: "Paketler kuruluyor…", error: "Hata ile kapandı" };
+const label = (st) => st ? t(st) : "";
 
 function render() {
   const q = $("#q").value.trim().toLocaleLowerCase("tr");
   const vis = projects.filter((p) => (showHidden || !p.hidden) && (!q || (p.name + " " + p.rel + " " + p.kind).toLocaleLowerCase("tr").includes(q)));
-  $("#grid").innerHTML = vis.length ? vis.map((p) => {
-    const s = st[p.id]?.status || "";
-    return `<div class="app${p.hidden ? " hidden-app" : ""}" data-id="${p.id}" data-st="${s}" role="button" tabindex="0" title="${esc(p.rel)}${p.cmd ? "\n" + esc(p.install ? p.install + " && " + p.cmd : p.cmd) : ""}">
-      <button class="more" data-more="${p.id}" aria-label="Seçenekler">⋯</button>
-      ${icon(p)}<span class="badge"></span>
-      <div class="name">${esc(p.name)}</div>
-      <div class="sub">${esc(p.group ? p.group + " · " : "")}${esc(p.kind)}${p.install ? " · kurulum" : ""}</div>
-    </div>`;
-  }).join("") : (projects.length ? `<div class="empty" style="grid-column:1/-1">Eşleşen proje yok</div>`
-    : `<div class="empty" style="grid-column:1/-1">Henüz proje bulunamadı. Projelerinin olduğu klasörü ekle.<br><br><button class="btn pri" data-openfolders>Klasör ekle</button></div>`);
-
+  // Sürükleme ya da grup adı düzenlenirken ızgarayı yeniden çizme; yoksa sürükleme kopar.
+  if (!dragRel && !dragFid && !document.activeElement?.classList.contains("gname")) { renderBoard(vis, q); renderFolder(); }
   const run = projects.filter((p) => st[p.id] && st[p.id].status !== "error");
   $("#runWrap").hidden = !run.length;
   $("#running").innerHTML = run.map((p) => {
     const s = st[p.id];
     return `<div class="rrow" data-st="${s.status}">${icon(p)}
       <div class="meta"><div class="t">${esc(p.name)}</div>
-      ${s.url ? `<a class="u" href="${esc(s.url)}" target="_blank">${esc(s.url.replace("http://", ""))}</a>` : `<span class="state">${label[s.status] || ""}</span>`}</div>
-      <div class="acts">${s.url ? `<a class="btn sm pri" href="${esc(s.url)}" target="_blank" style="text-decoration:none">Aç</a>` : ""}
-      <button class="btn sm" data-log="${p.id}">Log</button><button class="btn sm danger" data-stop="${p.id}">Durdur</button></div></div>`;
+      ${s.url ? `<a class="u" href="${esc(s.url)}" target="_blank">${esc(s.url.replace("http://", ""))}</a>` : `<span class="state">${label(s.status)}</span>`}</div>
+      <div class="acts">${s.url ? `<a class="btn sm pri" href="${esc(s.url)}" target="_blank" style="text-decoration:none">${t("open")}</a>` : ""}
+      <button class="btn sm" data-log="${p.id}">${t("log")}</button><button class="btn sm danger" data-stop="${p.id}">${t("stop")}</button></div></div>`;
   }).join("");
   const n = run.filter((p) => st[p.id].status === "running").length;
-  $("#count").textContent = projects.filter((p) => !p.hidden).length + " proje" + (n ? " · " + n + " çalışıyor" : "");
-  $("#showHidden").textContent = showHidden ? "Gizlenenleri sakla" : "Gizlenenleri göster (" + projects.filter((p) => p.hidden).length + ")";
+  $("#count").textContent = t("count", projects.filter((p) => !p.hidden).length, n);
+  $("#showHidden").checked = showHidden;
+  if ($("#fmodal").classList.contains("on")) renderHidden();
 }
+
+function tile(p) {
+  const s = st[p.id]?.status || "";
+  return `<div class="app${p.hidden ? " hidden-app" : ""}" data-id="${p.id}" data-rel="${esc(p.rel)}" data-st="${s}" draggable="true" role="button" tabindex="0" title="${esc(p.rel)}${p.cmd ? "\n" + esc(p.install ? p.install + " && " + p.cmd : p.cmd) : ""}">
+      <button class="more" data-more="${p.id}" aria-label="${t("options")}">⋯</button>
+      ${icon(p)}<span class="badge"></span>${p.kind === "Remotion" ? `<span class="vid" title="${t("video")}"><svg width="9" height="10" viewBox="0 0 9 10"><path d="M0 0v10l9-5z" fill="currentColor"/></svg></span>` : ""}
+      <div class="name">${esc(p.name)}</div>
+      <div class="sub">${esc(p.group ? p.group + " · " : "")}${esc(p.kind)}${p.install ? " · " + t("install") : ""}</div>
+    </div>`;
+}
+function folderTile(g, items) {
+  const n = items.filter((p) => st[p.id]?.status === "running").length;
+  return `<div class="app fold" data-fid="${g.id}" draggable="true" data-st="${n ? "running" : ""}" role="button" tabindex="0" title="${esc(g.name)}">
+      <button class="more" data-gmore="${g.id}" aria-label="${t("groupOptions")}">⋯</button>
+      <div class="ico folder">${items.slice(0, 9).map((p) => icon(p, "ico mini")).join("")}</div><span class="badge"></span>
+      <div class="name">${esc(g.name)}</div>
+      <div class="sub">${t("nProjects", items.length, n)}</div>
+    </div>`;
+}
+const shown = (p) => showHidden || !p.hidden;
+function renderBoard(vis, q) {
+  if (!projects.length) return $("#board").innerHTML = `<h2>${t("projects")}</h2><div class="empty">${t("noProjects")}<br><br><button class="btn pri" data-openfolders>${t("addFolder")}</button></div>`;
+  // Aramada klasörler açılır, eşleşen her proje düz listede görünür.
+  if (q) return $("#board").innerHTML = `<h2>${t("projects")}</h2><div class="grid">${vis.map(tile).join("") || `<div class="empty" style="grid-column:1/-1">${t("noMatch")}</div>`}</div>`;
+  const byRel = new Map(projects.map((p) => [p.rel, p])), inGroup = new Set(groups.flatMap((g) => g.items));
+  // Klasörler kendi yerlerinde (g.at), projeler son dokunulma sırasıyla aralarına dizilir.
+  const cells = vis.filter((p) => !inGroup.has(p.rel)).map(tile);
+  groups.map((g, i) => [g, i, g.items.map((r) => byRel.get(r)).filter((p) => p && shown(p))]).filter(([, , it]) => it.length)
+    .sort((a, b) => (a[0].at ?? a[1]) - (b[0].at ?? b[1]))
+    .forEach(([g, i, it]) => cells.splice(Math.min(g.at ?? i, cells.length), 0, folderTile(g, it)));
+  // Kullanıcının sürükleyerek verdiği sıra; sırada olmayan yeni projeler başa gelir.
+  const rank = new Map(order.map((k, i) => [k, i]));
+  const keyOf = (h) => { const m = h.match(/data-fid="([^"]*)"/); return m ? "f:" + m[1] : (h.match(/data-rel="([^"]*)"/) || [])[1]?.replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">"); };
+  const fresh = cells.filter((h) => !rank.has(keyOf(h))), kept = cells.filter((h) => rank.has(keyOf(h))).sort((a, b) => rank.get(keyOf(a)) - rank.get(keyOf(b)));
+  $("#board").innerHTML = `<h2>${t("projects")}</h2><div class="grid" data-drop="">${[...fresh, ...kept].join("")}</div>`;
+}
+
+// gruplar: telefondaki klasörler gibi. Projeyi başka projenin üstüne bırak, klasör olsun.
+const saveGroups = () => fetch("/api/groups", { method: "POST", headers: { "x-rl": "1", "content-type": "application/json" }, body: JSON.stringify(groups) })
+  .then((r) => { if (!r.ok) throw 0; }).catch(() => $("#upd").classList.add("on"));
+const gid = () => Math.random().toString(36).slice(2, 10);
+const groupOf = (rel) => groups.find((g) => g.items.includes(rel));
+const cellKey = (el) => el.dataset.fid ? "f:" + el.dataset.fid : el.dataset.rel;
+// Ana ızgaradaki sıra değişince her klasörün yerini yeniden yaz.
+function placeFolders(keys) { keys.forEach((k, i) => { const g = k.startsWith("f:") && groups.find((x) => x.id === k.slice(2)); if (g) g.at = i; }); }
+const boardKeys = () => [...document.querySelectorAll("#board .grid > .app")].map(cellKey);
+const saveOrder = () => fetch("/api/order", { method: "POST", headers: { "x-rl": "1", "content-type": "application/json" }, body: JSON.stringify(order) })
+  .then((r) => { if (!r.ok) throw 0; }).catch(() => $("#upd").classList.add("on"));
+// Ana ızgarada bir kutucuğu (proje ya da klasör) başka bir kutucuğun önüne taşı; null = sona.
+function moveCell(k, beforeKey) {
+  const keys = boardKeys().filter((x) => x !== k), i = beforeKey ? keys.indexOf(beforeKey) : -1;
+  i < 0 ? keys.push(k) : keys.splice(i, 0, k);
+  order = keys; placeFolders(keys); saveOrder(); saveGroups(); render();
+}
+// İki adın ortak başı grup adı olur: "Akış App" + "Akış Promo" → "Akış".
+function suggestName(a, b) {
+  const x = a.split(" "), y = b.split(" "), c = [];
+  for (let i = 0; i < Math.min(x.length, y.length) && x[i].toLocaleLowerCase("tr") === y[i].toLocaleLowerCase("tr"); i++) c.push(x[i]);
+  return c.join(" ") || t("newGroup");
+}
+function moveTo(rel, to, before) {
+  for (const g of groups) g.items = g.items.filter((r) => r !== rel);
+  let g = null;
+  if (to === "new") { const p = projects.find((x) => x.rel === rel); g = { id: gid(), name: p.name, collapsed: false, items: [] }; groups.push(g); }
+  else if (to) g = groups.find((x) => x.id === to);
+  if (g) { const i = before ? g.items.indexOf(before) : -1; i < 0 ? g.items.push(rel) : g.items.splice(i, 0, rel); }
+  groups = groups.filter((x) => x.items.length);
+  saveGroups(); render();
+  if (to === "new") openFolder(g.id, true);
+  return g;
+}
+function makeFolder(rel, onto) {
+  const a = projects.find((x) => x.rel === onto), b = projects.find((x) => x.rel === rel);
+  for (const g of groups) g.items = g.items.filter((r) => r !== rel && r !== onto);
+  const keys = boardKeys().filter((k) => k !== rel), at = keys.indexOf(onto);
+  const g = { id: gid(), name: suggestName(a.name, b.name), collapsed: false, items: [onto, rel] };
+  keys.splice(at, 1, "f:" + g.id); placeFolders(keys); order = keys; saveOrder();
+  // Yeni klasör, üstüne bırakılan projenin yerinde doğsun: diğer klasörlerin sonuna.
+  groups = groups.filter((x) => x.items.length); groups.push(g); placeFolders(keys);
+  saveGroups(); render();
+  requestAnimationFrame(() => openFolder(g.id, true));
+}
+
+// açık klasör: kutucuğun yerinden büyür, kapanınca oraya geri küçülür
+let openId = null;
+const fov = $("#fov"), fpanel = $("#fpanel"), ftitle = $("#ftitle");
+const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+function folderItems(g) { const m = new Map(projects.map((p) => [p.rel, p])); return g.items.map((r) => m.get(r)).filter((p) => p && shown(p)); }
+function renderFolder() {
+  const g = openId && groups.find((x) => x.id === openId);
+  if (!g) return;
+  fpanel.innerHTML = `<div class="grid" data-drop="${g.id}">${folderItems(g).map(tile).join("")}</div>`;
+  if (document.activeElement !== ftitle) ftitle.value = g.name;
+}
+function flip(fromEl, dir) {
+  const ico = fromEl?.querySelector(".ico");
+  if (!ico || reduce.matches) return Promise.resolve();
+  const a = ico.getBoundingClientRect(), b = fpanel.getBoundingClientRect();
+  const from = `translate(${a.left - b.left}px,${a.top - b.top}px) scale(${a.width / b.width},${a.height / b.height})`;
+  const kf = [{ transform: from, borderRadius: "60px" }, { transform: "none", borderRadius: "30px" }];
+  return fpanel.animate(dir > 0 ? kf : kf.reverse(), { duration: dir > 0 ? 380 : 260, easing: dir > 0 ? "cubic-bezier(.2,1.25,.35,1)" : "cubic-bezier(.4,0,.6,1)", fill: "both" }).finished;
+}
+function openFolder(id, rename) {
+  openId = id; closeMenu(); renderFolder();
+  fov.classList.add("on"); fov.offsetWidth; fov.classList.add("open");
+  flip(document.querySelector(`[data-fid="${id}"]`), 1).then(() => fpanel.getAnimations().forEach((a) => a.cancel()));
+  if (rename) setTimeout(() => { ftitle.focus(); ftitle.select(); }, 260);
+}
+async function closeFolder() {
+  if (!openId) return;
+  const id = openId; openId = null; ftitle.blur();
+  fov.classList.remove("open");
+  await flip(document.querySelector(`[data-fid="${id}"]`), -1);
+  fov.classList.remove("on"); fpanel.getAnimations().forEach((a) => a.cancel()); render();
+}
+$("#fbg").onclick = closeFolder;
+ftitle.onchange = () => { const g = groups.find((x) => x.id === openId); if (!g) return; g.name = ftitle.value.trim().slice(0, 40) || t("group"); ftitle.value = g.name; saveGroups(); };
+ftitle.onkeydown = (e) => { if (e.key === "Enter") ftitle.blur(); if (e.key === "Escape") { e.stopPropagation(); ftitle.value = groups.find((x) => x.id === openId)?.name || ""; ftitle.blur(); } };
+ftitle.onblur = () => setTimeout(render, 0);
+
+// sürükle bırak
+const clearMarks = () => { document.querySelectorAll(".merge,.drop-before,.drop-after").forEach((el) => el.classList.remove("merge", "drop-before", "drop-after")); fov.classList.remove("out"); };
+// Kutucuğun sol/sağ kenarı = yer değiştir, ortası = klasöre koy / klasör yap.
+function side(e, app, edge) { const r = app.getBoundingClientRect(), x = (e.clientX - r.left) / r.width; return x < edge ? "before" : x > 1 - edge ? "after" : "mid"; }
+function nextKey(app) { let n = app.nextElementSibling; while (n && !n.classList.contains("app")) n = n.nextElementSibling; return n ? cellKey(n) : null; }
+function reorderAt(e, app) {
+  const z = side(e, app, .5);
+  return { act: "reorder", before: z === "before" ? cellKey(app) : nextKey(app), mark: app, cls: z === "before" ? "drop-before" : "drop-after" };
+}
+function folderTarget(e) {
+  if (!e.target.closest("#board [data-drop]")) return null;
+  const app = e.target.closest(".app");
+  if (app && app.dataset.fid !== dragFid) return reorderAt(e, app);
+  return app ? null : { before: null, mark: null };
+}
+function dropTarget(e) {
+  if (e.target.closest("#fbg")) return { act: "out" };
+  const inPanel = e.target.closest("#fpanel"), app = e.target.closest(".app");
+  if (inPanel) return app && app.dataset.rel !== dragRel ? { act: "before", before: app.dataset.rel, mark: app, cls: "drop-before" } : { act: "panel" };
+  if (!e.target.closest("[data-drop]")) return null;
+  if (!app) return { act: "reorder", before: null };
+  if (app.dataset.rel === dragRel) return { act: "none" };
+  const z = side(e, app, .28);
+  if (z !== "mid") return { ...reorderAt(e, app), cls: z === "before" ? "drop-before" : "drop-after", before: z === "before" ? cellKey(app) : nextKey(app) };
+  if (app.dataset.fid) return groupOf(dragRel)?.id === app.dataset.fid ? { act: "none" } : { act: "into", fid: app.dataset.fid, mark: app, cls: "merge" };
+  return { act: "folder", onto: app.dataset.rel, mark: app, cls: "merge" };
+}
+document.addEventListener("dragstart", (e) => {
+  const app = e.target.closest?.(".app"); if (!app) return;
+  if (app.dataset.fid) {
+    dragFid = app.dataset.fid; closeMenu(); e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", dragFid);
+    return requestAnimationFrame(() => { app.classList.add("dragging"); document.body.classList.add("dnd"); });
+  }
+  dragRel = app.dataset.rel; closeMenu(); $("#toast").classList.remove("on");
+  e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", dragRel);
+  requestAnimationFrame(() => { app.classList.add("dragging"); document.body.classList.add("dnd"); });
+});
+document.addEventListener("dragover", (e) => {
+  if (dragFid) {
+    const t = folderTarget(e); clearMarks(); if (!t) return;
+    e.preventDefault(); e.dataTransfer.dropEffect = "move"; t.mark?.classList.add(t.cls); return;
+  }
+  if (!dragRel) return;
+  const t = dropTarget(e); clearMarks(); if (!t) return;
+  e.preventDefault(); e.dataTransfer.dropEffect = "move";
+  if (t.act === "out") fov.classList.add("out"); else if (t.mark) t.mark.classList.add(t.cls);
+});
+function endDrag() { dragRel = dragFid = null; clearMarks(); document.body.classList.remove("dnd"); }
+document.addEventListener("drop", (e) => {
+  if (dragFid) {
+    const t = folderTarget(e), fid = dragFid; if (!t) return;
+    e.preventDefault(); endDrag(); return moveCell("f:" + fid, t.before);
+  }
+  if (!dragRel) return;
+  const t = dropTarget(e); if (!t) return;
+  e.preventDefault();
+  const rel = dragRel, p = projects.find((x) => x.rel === rel); endDrag();
+  if (t.act === "folder") return makeFolder(rel, t.onto);
+  if (t.act === "reorder") return moveCell(rel, t.before);
+  if (t.act === "into") { const g = moveTo(rel, t.fid); return toast(t("moved", p.name, g.name)); }
+  if (t.act === "before") return moveTo(rel, openId, t.before);
+  if (t.act === "out") {
+    const fk = "f:" + openId, i = order.indexOf(fk);
+    if (i >= 0) { order = order.filter((k) => k !== rel); order.splice(order.indexOf(fk) + 1, 0, rel); saveOrder(); }
+    moveTo(rel, ""); toast(t("leftGroup", p.name)); if (!groups.some((g) => g.id === openId)) closeFolder(); return; }
+  render();
+});
+document.addEventListener("dragend", () => { if (!dragRel && !dragFid) return; endDrag(); render(); });
+
+// grup menüsü ve açma
+function openGroupMenu(id, x, y) {
+  menu.innerHTML = `<button data-ga="open">${t("open")}</button><button data-ga="rename">${t("rename")}</button><hr>
+    <button data-ga="del">${t("dissolve")}</button>`;
+  placeMenu(id, x, y);
+}
+document.addEventListener("click", (e) => {
+  const a = e.target.closest("#menu") && e.target.dataset.ga; if (!a) return;
+  const i = groups.findIndex((g) => g.id === menu.dataset.id), g = groups[i];
+  closeMenu();
+  if (a === "open" || a === "rename") return openFolder(g.id, a === "rename");
+  if (a === "del") { groups.splice(i, 1); toast(t("dissolved", g.name)); saveGroups(); render(); }
+});
+document.addEventListener("click", (e) => {
+  const gm = e.target.closest("[data-gmore]");
+  if (gm) { e.stopPropagation(); const r = gm.getBoundingClientRect(); return openGroupMenu(gm.dataset.gmore, r.right - 10, r.bottom + 4); }
+  const f = e.target.closest("[data-fid]");
+  if (f) { e.stopPropagation(); closeMenu(); openFolder(f.dataset.fid); }
+}, true);
+document.addEventListener("contextmenu", (e) => { const f = e.target.closest("[data-fid]"); if (f) { e.preventDefault(); e.stopImmediatePropagation(); openGroupMenu(f.dataset.fid, e.clientX, e.clientY); } }, true);
+document.addEventListener("keydown", (e) => {
+  const f = e.target.closest?.("[data-fid]");
+  if (f && e.key === "Enter") { e.stopImmediatePropagation(); openFolder(f.dataset.fid); }
+  if (e.key === "Escape" && openId && e.target !== ftitle) { e.stopImmediatePropagation(); closeFolder(); }
+}, true);
+
+// panel kodu güncellendiyse haber ver; yeniden başlatınca sunucular yeniden açılır
+async function checkVersion() {
+  const r = await fetch("/api/meta").then((r) => r.ok ? r.json() : null).catch(() => null);
+  $("#upd").classList.toggle("on", !r || r.stale);
+}
+$("#restart").onclick = async () => {
+  $("#restart").textContent = t("restarting");
+  await fetch("/api/restart", { method: "POST", headers: { "x-rl": "1" } }).catch(() => {});
+  for (let i = 0; i < 40; i++) { await new Promise((r) => setTimeout(r, 250)); if (await fetch("/api/meta").then((r) => r.ok).catch(() => false)) return location.reload(); }
+  toast(t("restartFail"));
+};
 
 async function loadProjects(refresh) { projects = await (await fetch("/api/projects" + (refresh ? "?refresh" : ""))).json(); render(); }
 async function loadStatus() { st = await (await fetch("/api/status")).json(); render(); if (logId) loadLog(); }
@@ -187,8 +521,8 @@ async function runApp(id) {
   const p = projects.find((x) => x.id === id);
   if (st[id]?.status === "starting" || st[id]?.status === "installing") return openLog(id);
   const r = await post("/api/run?id=" + id);
-  if (r.opened) toast(p.name + " açıldı");
-  else toast(p.kind === "Xcode" ? "Xcode'da açılıyor" : p.name + (p.install ? " kuruluyor, sonra açılacak" : " başlatılıyor"));
+  if (r.opened) toast(t("opened", p.name));
+  else toast(p.kind === "Xcode" ? t("xcodeOpening") : p.install ? t("installingThen", p.name) : t("startingP", p.name));
   setTimeout(loadStatus, 400);
 }
 
@@ -197,14 +531,21 @@ const menu = $("#menu");
 function openMenu(id, x, y) {
   const p = projects.find((x) => x.id === id), s = st[id];
   menu.innerHTML = `<div class="path">${esc(p.rel)}</div>
-    <button data-a="run">${s?.status === "running" ? "Tarayıcıda aç" : p.kind === "Xcode" ? "Xcode'da aç" : "Çalıştır"}</button>
-    ${s ? `<button data-a="stop">Durdur</button>` : ""}
-    <button data-a="log">Log</button><hr>
-    <button data-a="reveal">Klasörü göster</button>
-    <button data-a="code">Editörde aç</button>
-    <button data-a="rescan">Yenile (ikon, ad, komut)</button><hr>
-    <div class="rn"><input id="rn" value="${esc(p.name)}" aria-label="Ad"><button class="btn sm" data-a="rename" style="width:auto">Kaydet</button></div>
-    <button data-a="hide">${p.hidden ? "Göster" : "Gizle"}</button>`;
+    <button data-a="run">${s?.status === "running" ? t("openBrowser") : p.kind === "Xcode" ? t("openXcode") : t("run")}</button>
+    ${s ? `<button data-a="stop">${t("stop")}</button>` : ""}
+    <button data-a="log">${t("log")}</button><hr>
+    <button data-a="reveal">${t("reveal")}</button>
+    <button data-a="code">${t("code")}</button>
+    <button data-a="rescan">${t("rescan")}</button><hr>
+    <div class="rn"><input id="rn" value="${esc(p.name)}" aria-label="${t("name")}"><button class="btn sm" data-a="rename" style="width:auto">${t("save")}</button></div>
+    <button data-a="hide">${p.hidden ? t("show") : t("hide")}</button><hr>
+    <div class="lbl">${t("moveTo")}</div>
+    ${groups.filter((g) => !g.items.includes(p.rel)).map((g) => `<button data-a="mv" data-g="${g.id}">${esc(g.name)}</button>`).join("")}
+    <button data-a="mv" data-g="new">${t("newGroupDots")}</button>
+    ${groups.some((g) => g.items.includes(p.rel)) ? `<button data-a="mv" data-g="">${t("removeFromGroup")}</button>` : ""}`;
+  placeMenu(id, x, y);
+}
+function placeMenu(id, x, y) {
   menu.dataset.id = id; menu.classList.add("on");
   const r = menu.getBoundingClientRect();
   menu.style.left = Math.max(8, Math.min(x, innerWidth - r.width - 8)) + "px";
@@ -216,12 +557,13 @@ menu.addEventListener("click", async (e) => {
   if (!a) return;
   closeMenu();
   if (a === "run") runApp(id);
-  if (a === "stop") { await post("/api/stop?id=" + id); toast(p.name + " durduruldu"); setTimeout(loadStatus, 800); }
+  if (a === "stop") { await post("/api/stop?id=" + id); toast(t("stopped", p.name)); setTimeout(loadStatus, 800); }
   if (a === "log") openLog(id);
   if (a === "reveal") post("/api/reveal?id=" + id);
   if (a === "code") post("/api/code?id=" + id);
-  if (a === "rescan") { const r = await post("/api/rescan?id=" + id); await loadProjects(); toast(r.removed ? p.name + " artık proje değil, listeden çıktı" : p.name + " yenilendi"); }
-  if (a === "hide") { await post("/api/hide?id=" + id + "&on=" + (p.hidden ? "0" : "1")); loadProjects(); }
+  if (a === "rescan") { const r = await post("/api/rescan?id=" + id); await loadProjects(); toast(r.removed ? t("notProject", p.name) : t("refreshed", p.name)); }
+  if (a === "hide") { await post("/api/hide?id=" + id + "&on=" + (p.hidden ? "0" : "1")); loadProjects(); if (!p.hidden) toast(t("hiddenToast", p.name)); }
+  if (a === "mv") { const g = moveTo(p.rel, e.target.dataset.g); if (e.target.dataset.g !== "new") toast(g ? t("moved", p.name, g.name) : t("leftGroup", p.name)); }
   if (a === "rename") { await post("/api/rename?id=" + id + "&name=" + encodeURIComponent($("#rn")?.value || "")); loadProjects(true); }
 });
 menu.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.id === "rn") menu.querySelector("[data-a=rename]").click(); });
@@ -230,8 +572,8 @@ menu.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.id =
 async function loadLog() {
   const d = await (await fetch("/api/log?id=" + logId)).json();
   const pre = $("#logBody"), atEnd = pre.scrollTop + pre.clientHeight >= pre.scrollHeight - 30;
-  pre.textContent = d.log.length ? d.log.join("\n") : "Bu panelden başlatılmadığı için log yok.";
-  $("#logState").textContent = label[st[logId]?.status] || (d.status === "stopped" ? "Kapandı" : "");
+  pre.textContent = d.log.length ? d.log.join("\n") : t("noLog");
+  $("#logState").textContent = label(st[logId]?.status) || (d.status === "stopped" ? t("closed") : "");
   if (atEnd) pre.scrollTop = pre.scrollHeight;
 }
 function openLog(id) { logId = id; $("#logTitle").textContent = projects.find((p) => p.id === id).name; $("#sheet").classList.add("on"); loadLog(); }
@@ -254,29 +596,38 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "/" && document.activeElement !== $("#q")) { e.preventDefault(); $("#q").focus(); }
 });
 $("#q").oninput = render;
-$("#refresh").onclick = async () => { $("#refresh").textContent = "Taranıyor…"; await loadProjects(true); $("#refresh").textContent = "Yenile"; toast(projects.length + " proje bulundu"); };
-$("#showHidden").onclick = () => { showHidden = !showHidden; try { localStorage.rlHidden = showHidden ? "1" : "0"; } catch {} render(); };
+$("#refresh").onclick = async () => { $("#refresh").textContent = t("scanning"); await loadProjects(true); $("#refresh").textContent = t("refresh"); toast(t("nFound", projects.length)); };
+$("#showHidden").onchange = (e) => { showHidden = e.target.checked; try { localStorage.rlHidden = showHidden ? "1" : "0"; } catch {} render(); };
+function renderHidden() {
+  const h = projects.filter((p) => p.hidden);
+  $("#hlist").innerHTML = h.map((p) => `<div class="frow">${icon(p)}<div class="nm">${esc(p.name)}<small>${esc(p.rel)}</small></div><button class="btn sm" data-unhide="${p.id}">${t("show")}</button></div>`).join("")
+    || `<div class="empty">${t("noHidden")}</div>`;
+}
+document.addEventListener("click", async (e) => {
+  const u = e.target.closest("[data-unhide]"); if (!u) return;
+  await post("/api/hide?id=" + u.dataset.unhide + "&on=0"); await loadProjects();
+});
 
 
 // klasörler
 async function loadFolders(d) {
   d = d || await (await fetch("/api/folders")).json();
-  const row = (p, k) => `<div class="frow"><code title="${esc(p)}">${esc(p)}</code><span class="k">${k}</span><button data-frm="${esc(p)}" aria-label="Kaldır">×</button></div>`;
-  $("#flist").innerHTML = d.roots.map((p) => row(p, "Klasör")).join("") + d.extra.map((p) => row(p, "Proje")).join("")
-    || `<div class="empty">Hiç klasör yok</div>`;
+  const row = (p, k) => `<div class="frow"><code title="${esc(p)}">${esc(p)}</code><span class="k">${k}</span><button data-frm="${esc(p)}" aria-label="${t("remove")}">×</button></div>`;
+  $("#flist").innerHTML = d.roots.map((p) => row(p, t("kindFolder"))).join("") + d.extra.map((p) => row(p, t("kindProject"))).join("")
+    || `<div class="empty">${t("noFolders")}</div>`;
 }
-function openFolders() { $("#fmodal").classList.add("on"); loadFolders(); }
+function openFolders() { $("#fmodal").classList.add("on"); loadFolders(); renderHidden(); }
 async function addFolder(q) {
   const r = await fetch("/api/folders/add?" + q, { method: "POST", headers: { "x-rl": "1" } }).then((r) => r.json());
   if (r.cancelled) return;
-  if (r.error) return toast(r.error);
+  if (r.error) return toast(t("folderNotFound"));
   loadFolders(r); $("#fpath").value = ""; await loadProjects(); loadStatus();
-  toast(r.as === "project" ? "Proje eklendi" : r.count + " proje bulundu");
+  toast(r.as === "project" ? t("projectAdded") : t("nFound", r.count));
 }
-$("#folders").onclick = openFolders;
+$("#settings").onclick = openFolders;
 $("#fclose").onclick = () => $("#fmodal").classList.remove("on");
 $("#fmodal").onclick = (e) => { if (e.target.id === "fmodal") $("#fclose").click(); };
-$("#fpick").onclick = async () => { $("#fpick").textContent = "Pencere açıldı…"; await addFolder("pick=1"); $("#fpick").textContent = "Klasör seç…"; };
+$("#fpick").onclick = async () => { $("#fpick").textContent = t("pickOpen"); await addFolder("pick=1"); $("#fpick").textContent = t("pick"); };
 $("#fadd").onclick = () => $("#fpath").value.trim() && addFolder("path=" + encodeURIComponent($("#fpath").value.trim()));
 $("#fpath").onkeydown = (e) => { if (e.key === "Enter") $("#fadd").click(); };
 document.addEventListener("click", async (e) => {
@@ -284,8 +635,11 @@ document.addEventListener("click", async (e) => {
   const rm = e.target.closest("[data-frm]");
   if (rm) { loadFolders(await post("/api/folders/remove?path=" + encodeURIComponent(rm.dataset.frm))); await loadProjects(); }
 });
-loadProjects().then(loadStatus);
-if (location.hash === "#klasorler") openFolders();
+applyLang();
+fetch("/api/settings").then((r) => r.json()).then((c) => { order = c.order || []; if (L[c.lang]) { lang = c.lang; applyLang(); } }).catch(() => {})
+  .then(() => fetch("/api/groups")).then((r) => r.json()).then((g) => { groups = g; return loadProjects(); }).then(loadStatus);
+if (/^#(klasorler|ayarlar|settings)$/.test(location.hash)) openFolders();
+checkVersion(); setInterval(() => document.hidden || checkVersion(), 15000);
 setInterval(() => document.hidden || loadStatus(), 2500);
 </script>
 </body>
