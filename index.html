@@ -41,6 +41,10 @@ h2{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;
 .rrow a.u:hover{text-decoration:underline}
 .rrow .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .state{font-size:12px;color:var(--mut)}
+.svcs{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.svc{font-size:11px;line-height:18px;color:var(--mut);border:1px solid var(--line);border-radius:6px;padding:0 6px;white-space:nowrap;text-decoration:none}
+a.svc:hover{color:var(--fg);border-color:var(--mut)}
+.menu .svcs{padding:2px 10px 6px;max-width:260px}
 
 /* ızgara */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:22px 14px}
@@ -217,6 +221,7 @@ const L = {
     name: "Ad", save: "Kaydet", show: "Göster", hide: "Gizle", moveTo: "Gruba taşı", newGroupDots: "Yeni grup…", removeFromGroup: "Gruptan çıkar",
     stopped: (p) => `${p} durduruldu`, notProject: (p) => `${p} artık proje değil, listeden çıktı`, refreshed: (p) => `${p} yenilendi`,
     noLog: "Bu panelden başlatılmadığı için log yok.", closed: "Kapandı",
+    services: "Servisler", gitLocal: "Git · yalnız yerel",
     hiddenTitle: "Gizlenenler", hiddenHint: "Gizlediğin projeler ızgarada görünmez. Buradan geri getirebilirsin.", noHidden: "Gizlenen proje yok", hiddenToast: (p) => `${p} gizlendi. Ayarlar'dan geri getirebilirsin`, showInGrid: "Gizlenenleri ızgarada soluk göster",
   },
   en: {
@@ -237,6 +242,7 @@ const L = {
     name: "Name", save: "Save", show: "Show", hide: "Hide", moveTo: "Move to group", newGroupDots: "New group…", removeFromGroup: "Remove from group",
     stopped: (p) => `Stopped ${p}`, notProject: (p) => `${p} is no longer a project and was removed`, refreshed: (p) => `Refreshed ${p}`,
     noLog: "No log: this server wasn't started from the panel.", closed: "Stopped",
+    services: "Services", gitLocal: "Git · local only",
     hiddenTitle: "Hidden", hiddenHint: "Hidden projects don't show in the grid. Bring them back from here.", noHidden: "No hidden projects", hiddenToast: (p) => `${p} hidden. Bring it back from Settings`, showInGrid: "Show hidden projects faded in the grid",
   },
 };
@@ -266,10 +272,18 @@ function icon(p, cls = "ico") {
 }
 function iconFail(img) { const box = img.parentNode; box.setAttribute("style", box.dataset.grad); box.querySelector(".mono").hidden = false; img.remove(); }
 const label = (st) => st ? t(st) : "";
+// Servis rozetleri: GitHub tıklanınca repoya gider, diğerlerinde ayrıntı (proje adı vb.) üstüne gelince görünür.
+const svcName = (s) => s.local ? t("gitLocal") : s.n;
+function svcs(p) {
+  if (!p.services?.length) return "";
+  return `<div class="svcs">${p.services.map((s) => s.url
+    ? `<a class="svc" href="${esc(s.url)}" target="_blank" title="${esc(s.sub || "")}">${esc(svcName(s))}</a>`
+    : `<span class="svc"${s.sub ? ` title="${esc(s.sub)}"` : ""}>${esc(svcName(s))}</span>`).join("")}</div>`;
+}
 
 function render() {
   const q = $("#q").value.trim().toLocaleLowerCase("tr");
-  const vis = projects.filter((p) => (showHidden || !p.hidden) && (!q || (p.name + " " + p.rel + " " + p.kind).toLocaleLowerCase("tr").includes(q)));
+  const vis = projects.filter((p) => (showHidden || !p.hidden) && (!q || (p.name + " " + p.rel + " " + p.kind + " " + (p.services || []).map((s) => s.n).join(" ")).toLocaleLowerCase("tr").includes(q)));
   // Sürükleme ya da grup adı düzenlenirken ızgarayı yeniden çizme; yoksa sürükleme kopar.
   if (!dragRel && !dragFid && !document.activeElement?.classList.contains("gname")) { renderBoard(vis, q); renderFolder(); }
   const run = projects.filter((p) => st[p.id] && st[p.id].status !== "error");
@@ -278,7 +292,7 @@ function render() {
     const s = st[p.id];
     return `<div class="rrow" data-st="${s.status}">${icon(p)}
       <div class="meta"><div class="t">${esc(p.name)}</div>
-      ${s.url ? `<a class="u" href="${esc(s.url)}" target="_blank">${esc(s.url.replace("http://", ""))}</a>` : `<span class="state">${label(s.status)}</span>`}</div>
+      ${s.url ? `<a class="u" href="${esc(s.url)}" target="_blank">${esc(s.url.replace("http://", ""))}</a>` : `<span class="state">${label(s.status)}</span>`}${svcs(p)}</div>
       <div class="acts">${s.url ? `<a class="btn sm pri" href="${esc(s.url)}" target="_blank" style="text-decoration:none">${t("open")}</a>` : ""}
       <button class="btn sm" data-log="${p.id}">${t("log")}</button><button class="btn sm danger" data-stop="${p.id}">${t("stop")}</button></div></div>`;
   }).join("");
@@ -290,7 +304,7 @@ function render() {
 
 function tile(p) {
   const s = st[p.id]?.status || "";
-  return `<div class="app${p.hidden ? " hidden-app" : ""}" data-id="${p.id}" data-rel="${esc(p.rel)}" data-st="${s}" draggable="true" role="button" tabindex="0" title="${esc(p.rel)}${p.cmd ? "\n" + esc(p.install ? p.install + " && " + p.cmd : p.cmd) : ""}">
+  return `<div class="app${p.hidden ? " hidden-app" : ""}" data-id="${p.id}" data-rel="${esc(p.rel)}" data-st="${s}" draggable="true" role="button" tabindex="0" title="${esc(p.rel)}${p.cmd ? "\n" + esc(p.install ? p.install + " && " + p.cmd : p.cmd) : ""}${p.services?.length ? "\n" + esc(p.services.map(svcName).join(" · ")) : ""}">
       <button class="more" data-more="${p.id}" aria-label="${t("options")}">⋯</button>
       ${icon(p)}<span class="badge"></span>${p.kind === "Remotion" ? `<span class="vid" title="${t("video")}"><svg width="9" height="10" viewBox="0 0 9 10"><path d="M0 0v10l9-5z" fill="currentColor"/></svg></span>` : ""}
       <div class="name">${esc(p.name)}</div>
@@ -531,7 +545,7 @@ async function runApp(id) {
 const menu = $("#menu");
 function openMenu(id, x, y) {
   const p = projects.find((x) => x.id === id), s = st[id];
-  menu.innerHTML = `<div class="path">${esc(p.rel)}</div>
+  menu.innerHTML = `<div class="path">${esc(p.rel)}</div>${svcs(p)}
     <button data-a="run">${s?.status === "running" ? t("openBrowser") : p.kind === "Xcode" ? t("openXcode") : t("run")}</button>
     ${s ? `<button data-a="stop">${t("stop")}</button>` : ""}
     <button data-a="log">${t("log")}</button><hr>

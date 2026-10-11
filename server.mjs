@@ -106,6 +106,44 @@ function findAppIcon(dir, depth) {
   return null;
 }
 
+// Projenin bağlı olduğu dış servisler: yayın yeri, repo, veri ve API'ler. Yalnız dosya adlarına ve paket listesine bakılır; .env okunmaz.
+const DEP_SERVICES = [
+  [["mongodb", "mongoose"], "MongoDB"], [["@supabase/supabase-js", "@supabase/ssr"], "Supabase"],
+  [["firebase", "firebase-admin"], "Firebase"], [["@neondatabase/serverless"], "Neon"], [["pg", "postgres", "@vercel/postgres"], "Postgres"],
+  [["@upstash/redis", "ioredis", "redis"], "Redis"], [["@vercel/blob"], "Vercel Blob"], [["@aws-sdk/client-s3"], "S3 / R2"],
+  [["stripe", "@stripe/stripe-js"], "Stripe"], [["react-native-purchases", "@revenuecat/purchases-js"], "RevenueCat"],
+  [["@anthropic-ai/sdk", "@ai-sdk/anthropic"], "Anthropic"], [["openai", "@ai-sdk/openai"], "OpenAI"],
+  [["@google/genai", "@google/generative-ai", "@ai-sdk/google"], "Gemini"], [["resend"], "Resend"],
+  [["posthog-js", "posthog-node"], "PostHog"], [["@sentry/nextjs", "@sentry/react", "@sentry/node"], "Sentry"],
+  [["mapbox-gl"], "Mapbox"],
+];
+function services(dir, items, pkg) {
+  const out = [], add = (n, extra) => { if (!out.some((s) => s.n === n)) out.push({ n, ...extra }); };
+  const vc = items.includes(".vercel") && readJSON(path.join(dir, ".vercel", "project.json"));
+  if (vc || items.includes("vercel.json")) add("Vercel", vc?.projectName ? { sub: vc.projectName } : {});
+  const wr = items.find((f) => /^wrangler\.(toml|jsonc?)$/.test(f));
+  if (wr) { const m = fs.readFileSync(path.join(dir, wr), "utf8").match(/^\s*"?name"?\s*[=:]\s*"([^"]+)"/m); add("Cloudflare", m ? { sub: m[1] } : {}); }
+  if (items.includes("netlify.toml")) add("Netlify");
+  if (items.includes("firebase.json")) add("Firebase");
+  if (items.includes(".git")) {
+    let cfg = ""; try { cfg = fs.readFileSync(path.join(dir, ".git", "config"), "utf8"); } catch {}
+    const url = (cfg.match(/\[remote "origin"\][^[]*?url\s*=\s*(\S+)/) || [])[1] || "";
+    const gh = url.match(/github\.com[:/]([^/]+\/[^/]+?)(?:\.git)?$/);
+    if (gh) add("GitHub", { sub: gh[1], url: `https://github.com/${gh[1]}` });
+    else add("Git", url ? { sub: url.replace(/^.*[@/]([^/:]+)[:/].*$/, "$1") } : { local: true });
+  }
+  const deps = { ...pkg?.dependencies, ...pkg?.devDependencies };
+  for (const [names, n] of DEP_SERVICES) if (names.some((d) => deps[d])) add(n);
+  // iOS: Swift paketleri proje dosyasında yazar.
+  const xc = items.find((f) => f.endsWith(".xcodeproj"));
+  if (xc) {
+    let pbx = ""; try { pbx = fs.readFileSync(path.join(dir, xc, "project.pbxproj"), "utf8"); } catch {}
+    if (/purchases-ios/i.test(pbx)) add("RevenueCat");
+    if (/firebase-ios-sdk/i.test(pbx)) add("Firebase");
+  }
+  return out;
+}
+
 async function lastTouched(dir) {
   if (exists(path.join(dir, ".git"))) {
     const t = Number((await sh("git", ["-C", dir, "log", "-1", "--format=%ct"])).trim());
@@ -148,7 +186,7 @@ async function describe(p) {
     id: Buffer.from(p.dir).toString("base64url"), dir: p.dir, rel,
     name: state.names[rel] || pretty(path.basename(p.dir)),
     group: [...state.roots, ...state.extra.map((e) => path.dirname(e))].includes(path.dirname(p.dir)) ? "" : pretty(parent),
-    kind: p.kind, cmd: p.cmd, install: p.install, icon,
+    kind: p.kind, cmd: p.cmd, install: p.install, icon, services: services(p.dir, p.items, p.pkg),
     touched: await lastTouched(p.dir),
   };
 }
