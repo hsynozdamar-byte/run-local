@@ -23,7 +23,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 <plist version="1.0"><dict>
 <key>CFBundleName</key><string>Run Local</string>
 <key>CFBundleDisplayName</key><string>Run Local</string>
-<key>CFBundleIdentifier</key><string>local.runlocal.app</string>
+<key>CFBundleIdentifier</key><string>local.runlocal</string>
 <key>CFBundleExecutable</key><string>RunLocal</string>
 <key>CFBundleIconFile</key><string>AppIcon</string>
 <key>CFBundlePackageType</key><string>APPL</string>
