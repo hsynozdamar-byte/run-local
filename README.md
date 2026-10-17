@@ -60,7 +60,7 @@ Bilgisayarındaki projeleri ikonlarıyla tek ekranda gösterir; tıklayınca ça
 
 ### Kurulum
 
-Gerekenler: macOS ve [Node.js](https://nodejs.org) 18+. Yukarıdaki iki komutu çalıştır; **Run Local** Applications klasörüne kurulur, Masaüstüne de kısayolu gelir (kısayolu silmek uygulamayı silmez); çift tıkla. Panel tarayıcıda değil kendi Mac penceresinde açılır; projeler yine varsayılan tarayıcıda açılır. Uygulamayı derlemek için Xcode Command Line Tools gerekir (`xcode-select --install`), yoksa Chrome uygulama penceresi kullanılır.
+Gerekenler: macOS ve [Node.js](https://nodejs.org) 18+. Yukarıdaki iki komutu çalıştır; **Run Local** Applications klasörüne kurulur, Masaüstüne de kısayolu (takma ad) gelir (kısayolu silmek uygulamayı silmez); çift tıkla. Panel tarayıcıda değil kendi Mac penceresinde açılır; projeler yine varsayılan tarayıcıda açılır. Uygulamayı derlemek için Xcode Command Line Tools gerekir (`xcode-select --install`), yoksa Chrome uygulama penceresi kullanılır.
 
 ### Ne yapar
 
