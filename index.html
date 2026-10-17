@@ -281,6 +281,8 @@ function svcs(p) {
     : `<span class="svc"${s.sub ? ` title="${esc(s.sub)}"` : ""}>${esc(svcName(s))}</span>`).join("")}</div>`;
 }
 
+// Yalnız değişince yaz; aynı HTML'i her 2,5 sn'de yeniden basmak ikonları bir an kaybettiriyordu.
+const setHTML = (el, h) => { if (el._h !== h) { el._h = h; el.innerHTML = h; } };
 function render() {
   const q = $("#q").value.trim().toLocaleLowerCase("tr");
   const vis = projects.filter((p) => (showHidden || !p.hidden) && (!q || (p.name + " " + p.rel + " " + p.kind + " " + (p.services || []).map((s) => s.n).join(" ")).toLocaleLowerCase("tr").includes(q)));
@@ -288,14 +290,14 @@ function render() {
   if (!dragRel && !dragFid && !document.activeElement?.classList.contains("gname")) { renderBoard(vis, q); renderFolder(); }
   const run = projects.filter((p) => st[p.id] && st[p.id].status !== "error");
   $("#runWrap").hidden = !run.length;
-  $("#running").innerHTML = run.map((p) => {
+  setHTML($("#running"), run.map((p) => {
     const s = st[p.id];
     return `<div class="rrow" data-st="${s.status}">${icon(p)}
       <div class="meta"><div class="t">${esc(p.name)}</div>
       ${s.url ? `<a class="u" href="${esc(s.url)}" target="_blank">${esc(s.url.replace("http://", ""))}</a>` : `<span class="state">${label(s.status)}</span>`}${svcs(p)}</div>
       <div class="acts">${s.url ? `<a class="btn sm pri" href="${esc(s.url)}" target="_blank" style="text-decoration:none">${t("open")}</a>` : ""}
       <button class="btn sm" data-log="${p.id}">${t("log")}</button><button class="btn sm danger" data-stop="${p.id}">${t("stop")}</button></div></div>`;
-  }).join("");
+  }).join(""));
   const n = run.filter((p) => st[p.id].status === "running").length;
   $("#count").textContent = t("count", projects.filter((p) => !p.hidden).length, n);
   $("#showHidden").checked = showHidden;
@@ -322,9 +324,9 @@ function folderTile(g, items) {
 }
 const shown = (p) => showHidden || !p.hidden;
 function renderBoard(vis, q) {
-  if (!projects.length) return $("#board").innerHTML = `<h2>${t("projects")}</h2><div class="empty">${t("noProjects")}<br><br><button class="btn pri" data-openfolders>${t("addFolder")}</button></div>`;
+  if (!projects.length) return setHTML($("#board"), `<h2>${t("projects")}</h2><div class="empty">${t("noProjects")}<br><br><button class="btn pri" data-openfolders>${t("addFolder")}</button></div>`);
   // Aramada klasörler açılır, eşleşen her proje düz listede görünür.
-  if (q) return $("#board").innerHTML = `<h2>${t("projects")}</h2><div class="grid">${vis.map(tile).join("") || `<div class="empty" style="grid-column:1/-1">${t("noMatch")}</div>`}</div>`;
+  if (q) return setHTML($("#board"), `<h2>${t("projects")}</h2><div class="grid">${vis.map(tile).join("") || `<div class="empty" style="grid-column:1/-1">${t("noMatch")}</div>`}</div>`);
   const byRel = new Map(projects.map((p) => [p.rel, p])), inGroup = new Set(groups.flatMap((g) => g.items));
   // Klasörler kendi yerlerinde (g.at), projeler son dokunulma sırasıyla aralarına dizilir.
   const cells = vis.filter((p) => !inGroup.has(p.rel)).map(tile);
@@ -335,7 +337,7 @@ function renderBoard(vis, q) {
   const rank = new Map(order.map((k, i) => [k, i]));
   const keyOf = (h) => { const m = h.match(/data-fid="([^"]*)"/); return m ? "f:" + m[1] : (h.match(/data-rel="([^"]*)"/) || [])[1]?.replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">"); };
   const fresh = cells.filter((h) => !rank.has(keyOf(h))), kept = cells.filter((h) => rank.has(keyOf(h))).sort((a, b) => rank.get(keyOf(a)) - rank.get(keyOf(b)));
-  $("#board").innerHTML = `<h2>${t("projects")}</h2><div class="grid" data-drop="">${[...fresh, ...kept].join("")}</div>`;
+  setHTML($("#board"), `<h2>${t("projects")}</h2><div class="grid" data-drop="">${[...fresh, ...kept].join("")}</div>`);
 }
 
 // gruplar: telefondaki klasörler gibi. Projeyi başka projenin üstüne bırak, klasör olsun.
@@ -393,7 +395,7 @@ function renderFolder() {
   const g = openId && groups.find((x) => x.id === openId);
   // Klasör boşalıp kalktıysa (ör. menüden son proje çıkarıldı) kapat.
   if (!g) { if (openId) closeFolder(); return; }
-  fpanel.innerHTML = `<div class="grid" data-drop="${g.id}">${folderItems(g).map(tile).join("")}</div>`;
+  setHTML(fpanel, `<div class="grid" data-drop="${g.id}">${folderItems(g).map(tile).join("")}</div>`);
   if (document.activeElement !== ftitle) ftitle.value = g.name;
 }
 function flip(fromEl, dir) {
