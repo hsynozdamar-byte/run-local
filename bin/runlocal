@@ -9,7 +9,7 @@ if ! lsof -nP -iTCP:$PORT -sTCP:LISTEN >/dev/null 2>&1; then
   for i in {1..50}; do lsof -nP -iTCP:$PORT -sTCP:LISTEN >/dev/null 2>&1 && break; sleep 0.1; done
 fi
 [ "$1" = "--serve" ] && exit 0
-APP="$HOME/Desktop/Run Local.app"
+APP="/Applications/Run Local.app"
 if [ -x "$APP/Contents/MacOS/RunLocal" ] && file "$APP/Contents/MacOS/RunLocal" | grep -q Mach-O; then
   open "$APP"
 elif [ -d "/Applications/Google Chrome.app" ]; then

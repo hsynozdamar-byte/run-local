@@ -15,7 +15,7 @@ git clone https://github.com/hsynozdamar-byte/run-local.git ~/Developer/run-loca
 ~/Developer/run-local/install.sh
 ```
 
-A **Run Local** app appears on your Desktop. Double-click it. The panel opens in its own native window (no browser tab); projects still open in your default browser. Building the app needs Xcode Command Line Tools (`xcode-select --install`); without them it falls back to a Chrome app window.
+**Run Local** is installed in Applications, with a shortcut on your Desktop (deleting the shortcut keeps the app). Double-click it. The panel opens in its own native window (no browser tab); projects still open in your default browser. Building the app needs Xcode Command Line Tools (`xcode-select --install`); without them it falls back to a Chrome app window.
 
 ## What it does
 
@@ -60,7 +60,7 @@ Bilgisayarındaki projeleri ikonlarıyla tek ekranda gösterir; tıklayınca ça
 
 ### Kurulum
 
-Gerekenler: macOS ve [Node.js](https://nodejs.org) 18+. Yukarıdaki iki komutu çalıştır; masaüstüne **Run Local** gelir, çift tıkla. Panel tarayıcıda değil kendi Mac penceresinde açılır; projeler yine varsayılan tarayıcıda açılır. Uygulamayı derlemek için Xcode Command Line Tools gerekir (`xcode-select --install`), yoksa Chrome uygulama penceresi kullanılır.
+Gerekenler: macOS ve [Node.js](https://nodejs.org) 18+. Yukarıdaki iki komutu çalıştır; **Run Local** Applications klasörüne kurulur, Masaüstüne de kısayolu gelir (kısayolu silmek uygulamayı silmez); çift tıkla. Panel tarayıcıda değil kendi Mac penceresinde açılır; projeler yine varsayılan tarayıcıda açılır. Uygulamayı derlemek için Xcode Command Line Tools gerekir (`xcode-select --install`), yoksa Chrome uygulama penceresi kullanılır.
 
 ### Ne yapar
 
